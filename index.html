@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0A0A0C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>APEX IRON — Pro Gym & Calisthenics Tracker</title>
+  <link id="pwa-manifest" rel="manifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0A0C;
+      --surface: #141418;
+      --surface-2: #1E1E24;
+      --border: #2A2A32;
+      --text: #F4F4F6;
+      --muted: #9494A3;
+      --orange: #FF5500;
+      --orange-glow: rgba(255, 85, 0, 0.18);
+      --green: #22C55E;
+      --red: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 76px; }
+    
+    /* TOP BAR + TIMER PERSISTENTE */
+    .top-bar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(10, 10, 12, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border); padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .brand span { color: var(--orange); }
+    .timer-pill {
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: 99px;
+      padding: 4px 10px; display: flex; align-items: center; gap: 8px; position: relative; overflow: hidden;
+    }
+    .timer-progress-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--orange); transition: width 0.3s linear; }
+    #timer-display { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1rem; color: var(--orange); cursor: pointer; padding: 2px 4px; }
+    .timer-btn { background: transparent; border: none; color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+    .timer-btn:active { background: var(--orange-glow); color: var(--orange); }
+
+    /* MAIN CONTAINER */
+    #main-content { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px; flex: 1; }
+
+    /* CARDS & TYPOGRAPHY */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .hero-card { background: linear-gradient(145deg, #18181F 0%, #111115 100%); border-color: #2E2420; }
+    .card-title { font-weight: 700; font-size: 1.05rem; }
+    .section-title { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin: 16px 0 10px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.82rem; }
+    .badge-orange { display: inline-block; background: var(--orange-glow); color: var(--orange); font-weight: 700; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; }
+    .row-gap { display: flex; align-items: center; gap: 8px; }
+    .full-width { width: 100%; }
+
+    /* BUTTONS & INPUTS */
+    .btn-primary { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-outline { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+    .btn-danger-ghost { background: transparent; color: var(--red); border: none; font-weight: 600; cursor: pointer; padding: 6px 10px; }
+    .btn-icon { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 6px 9px; cursor: pointer; }
+    .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+    .input-field { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; outline: none; }
+    .input-field:focus { border-color: var(--orange); }
+
+    /* WORKOUT LOGGER TABLE */
+    .workout-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+    .ex-log-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .prev-ghost { font-size: 0.78rem; color: var(--orange); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .notes-input { width: 100%; background: transparent; border: none; border-bottom: 1px dashed var(--border); color: var(--muted); font-size: 0.82rem; padding: 6px 0; margin: 6px 0 10px; outline: none; }
+    .sets-head, .set-row { display: grid; grid-template-columns: 26px 54px 1fr 1fr 46px 46px 34px; gap: 6px; align-items: center; text-align: center; }
+    .sets-head { font-size: 0.72rem; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .set-row { padding: 4px 0; border-radius: 8px; transition: background 0.2s; }
+    .set-done { background: rgba(34, 197, 94, 0.12); }
+    .set-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
+    .set-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+    .set-select { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 2px; font-weight: 700; font-size: 0.78rem; text-align: center; }
+    .type-W { color: #38BDF8; } .type-D { color: #F59E0B; } .type-F { color: #EF4444; } .type-RP { color: #A855F7; }
+    .set-check { width: 22px; height: 22px; accent-color: var(--green); cursor: pointer; margin: 0 auto; }
+
+    /* CHIPS, ROUTINES & ENCYCLOPEDIA */
+    .chip-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .chip { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); border-radius: 99px; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+    .chip.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .routine-quick-card { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .routine-quick-card:hover { border-color: var(--orange); }
+    .arrow-orange { color: var(--orange); font-weight: 800; }
+    .routine-ex-preview { list-style: none; margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: grid; gap: 4px; }
+    .builder-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
+    .alt-box { background: var(--surface-2); padding: 8px 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--orange); }
+
+    /* ANALYTICS, CALENDAR & MUSCLES */
+    .suggestion-box { background: var(--orange-glow); border: 1px solid rgba(255,85,0,0.4); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.85rem; margin-top: 10px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
+    .cal-day { background: var(--surface-2); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; min-height: 42px; }
+    .cal-trained { background: var(--orange); color: #fff; font-weight: 700; }
+    .cal-today { border: 1px solid #fff; }
+    .cal-suggested { border: 1px dashed var(--orange); color: var(--orange); }
+    .chart-svg { width: 100%; height: 150px; background: var(--surface-2); border-radius: 10px; margin: 8px 0; }
+    .muscle-bars-grid { display: grid; gap: 10px; margin-top: 12px; }
+    .progress-track { width: 100%; height: 7px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+    .progress-fill { height: 100%; border-radius: 99px; }
+
+    /* AI COACH CHAT */
+    .chat-box { min-height: 240px; max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.45; max-width: 88%; }
+    .msg-user { background: var(--orange); color: #fff; align-self: flex-end; }
+    .msg-ai { background: var(--surface-2); border: 1px solid var(--border); align-self: flex-start; }
+
+    /* BOTTOM NAVIGATION (MOBILE - XIAOMI 15T PRO) */
+    .nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(20, 20, 24, 0.96); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 4px;
+    }
+    .nav-btn { background: transparent; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600; cursor: pointer; padding: 4px 8px; }
+    .nav-btn.active { color: var(--orange); }
+    .nav-icon { font-size: 1.2rem; }
+
+    /* TABLET & DESKTOP ADAPTIVE LAYOUT (XIAOMI PAD 7 PRO 11.2") */
+    @media (min-width: 768px) {
+      body { padding-bottom: 0; padding-left: 210px; }
+      .nav-bar {
+        top: 0; right: auto; width: 210px; flex-direction: column; justify-content: flex-start;
+        border-top: none; border-right: 1px solid var(--border); padding: 72px 12px 16px; gap: 8px;
+      }
+      .nav-btn { flex-direction: row; font-size: 0.9rem; padding: 12px 14px; border-radius: 12px; width: 100%; gap: 12px; }
+      .nav-btn.active { background: var(--orange-glow); }
+      .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .muscle-bars-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR CON TIMER RECUPERO 03:00 -->
+  <header class="top-bar">
+    <div class="brand">APEX<span>IRON</span></div>
+    <div class="timer-pill">
+      <button class="timer-btn" onclick="adjustTimer(-15)">-15s</button>
+      <span id="timer-display" onclick="editTimerManual()" title="Tocca per inserire secondi">03:00</span>
+      <button class="timer-btn" onclick="adjustTimer(15)">+15s</button>
+      <button class="timer-btn" id="timer-toggle-btn" onclick="toggleTimer()">▶</button>
+      <div class="timer-progress-bar" id="timer-progress" style="width:100%"></div>
+    </div>
+    <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
+  </header>
+
+  <!-- CONTENUTO PRINCIPALE DINAMICO -->
+  <main id="main-content"></main>
+
+  <!-- NAVIGAZIONE ADATTIVA (BOTTOM SU 15T PRO, SIDEBAR SU PAD 7 PRO) -->
+  <nav class="nav-bar">
+    <button class="nav-btn active" data-tab="workout" onclick="switchTab('workout')">
+      <span class="nav-icon">🏋️</span><span data-i18n="nav_workout">Workout</span>
+    </button>
+    <button class="nav-btn" data-tab="routines" onclick="switchTab('routines')">
+      <span class="nav-icon">📋</span><span data-i18n="nav_routines">Schede</span>
+    </button>
+    <button class="nav-btn" data-tab="exercises" onclick="switchTab('exercises')">
+      <span class="nav-icon">📖</span><span data-i18n="nav_exercises">Esercizi</span>
+    </button>
+    <button class="nav-btn" data-tab="analytics" onclick="switchTab('analytics')">
+      <span class="nav-icon">📊</span><span data-i18n="nav_analytics">Analisi & Cal</span>
+    </button>
+    <button class="nav-btn" data-tab="coach" onclick="switchTab('coach')">
+      <span class="nav-icon">🤖</span><span data-i18n="nav_coach">AI Coach</span>
+    </button>
+  </nav>
+
+  <script>
+    // ================= MANIFEST PWA DINAMICO (SINGLE-FILE) =================
+    (function setupManifest() {
+      const manifest = {
+        name: "APEX IRON — Pro Gym & Calisthenics Tracker",
+        short_name: "APEX IRON",
+        start_url: location.href,
+        display: "standalone",
+        background_color: "#0A0A0C",
+        theme_color: "#0A0A0C",
+        icons: [{
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230A0A0C'/%3E%3Cpath d='M110 216h40v80h-40zm252 0h40v80h-40zM166 176h36v160h-36zm144 0h36v160h-36zM202 240h108v32H202z' fill='%23FF5500'/%3E%3C/svg%3E",
+          sizes: "512x512",
+          type: "image/svg+xml"
+        }]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+    })();
+
+    // ================= DATABASE MUSCOLI & ESERCIZI =================
+    const MUSCLE_GROUPS = {
+      chest: { it: "Petto", en: "Chest", recoveryHours: 48 },
+      back_lats: { it: "Dorsali (Ampiezza)", en: "Lats", recoveryHours: 48 },
+      back_upper: { it: "Centro Schiena / Trapezi", en: "Upper Back / Traps", recoveryHours: 48 },
+      shoulders_front: { it: "Deltoide Anteriore", en: "Front Delts", recoveryHours: 36 },
+      shoulders_side: { it: "Deltoide Laterale", en: "Side Delts", recoveryHours: 24 },
+      shoulders_rear: { it: "Deltoide Posteriore", en: "Rear Delts", recoveryHours: 24 },
+      biceps: { it: "Bicipiti", en: "Biceps", recoveryHours: 36 },
+      triceps: { it: "Tricipiti", en: "Triceps", recoveryHours: 36 },
+      quads: { it: "Quadricipiti", en: "Quads", recoveryHours: 72 },
+      hamstrings: { it: "Femorali", en: "Hamstrings", recoveryHours: 72 },
+      glutes: { it: "Glutei", en: "Glutes", recoveryHours: 60 },
+      calves: { it: "Polpacci", en: "Calves", recoveryHours: 24 },
+      abs: { it: "Addome / Core", en: "Abs / Core", recoveryHours: 24 },
+      forearms: { it: "Avambracci / Presa", en: "Forearms / Grip", recoveryHours: 24 },
+      mobility: { it: "Mobilità Articolare", en: "Joint Mobility", recoveryHours: 0 }
+    };
+
+    const EXERCISES_DB = [
+      // PETTO
+      { id: "bench_press_barbell", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front", "triceps"], name: { it: "Panca Piana con Bilanciere", en: "Barbell Bench Press" }, exec: { it: "Scapole addotte e depresse, arco toracico naturale, piedi piantati a terra. Scendi controllato fino allo sterno con gomiti a ~45°, poi spingi esplosivo senza staccare i glutei.", en: "Retract and depress scapulae, natural arch, feet planted. Lower bar to mid-sternum with elbows at ~45°, press explosively keeping glutes down." }, alt: { it: "Panca piana con manubri, Chest Press alla macchina, oppure Piegamenti zavorrati.", en: "Dumbbell Bench Press, Machine Chest Press, or Weighted Push-ups." } },
+      { id: "incline_db_press", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front", "triceps"], name: { it: "Spinte su Panca Inclinata (Manubri)", en: "Incline Dumbbell Press" }, exec: { it: "Panca a 30°-45°. Porta i manubri verso la parte alta del petto allargando leggermente i gomiti senza iperestendere le spalle in basso. Spingi convergendo in alto.", en: "Bench at 30°-45°. Lower dumbbells toward upper chest without overstretching shoulders at the bottom. Press up converging slightly." }, alt: { it: "Panca inclinata al Multipower/Bilanciere, Incline Chest Press, o Piegamenti declinati.", en: "Incline Barbell Press, Incline Machine Press, or Decline Push-ups." } },
+      { id: "cable_fly", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front"], name: { it: "Croci ai Cavi (Cable Fly)", en: "Cable Chest Fly" }, exec: { it: "Un passo avanti per stabilità, gomiti leggermente flessi e bloccati. Apri le braccia fino a un buon allungamento del petto, poi chiudi portando i polsi a toccarsi.", en: "Step forward for stability, keep a slight fixed bend in elbows. Open arms for a deep chest stretch, then bring wrists together." }, alt: { it: "Pec Deck Machine, Croci con manubri su panca, o Croci agli anelli / TRX.", en: "Pec Deck Machine, Dumbbell Flyes, or Ring / TRX Chest Flyes." } },
+      { id: "chest_press_machine", category: "bodybuilding", primary: "chest", secondary: ["triceps", "shoulders_front"], name: { it: "Chest Press Convergente", en: "Converging Chest Press" }, exec: { it: "Regola il sedile in modo che le maniglie siano all'altezza del centro del petto. Mantieni le spalle basse e spingi fino a quasi completa estensione.", en: "Adjust seat so handles align with mid-chest. Keep shoulders depressed and press to near lockout." }, alt: { it: "Panca piana con manubri o Piegamenti con deficit (mani su rialzi).", en: "Flat Dumbbell Press or Deficit Push-ups." } },
+      { id: "dips_chest", category: "calisthenics", primary: "chest", secondary: ["triceps", "shoulders_front"], name: { it: "Dip alle Parallele (Focus Petto)", en: "Chest Dips" }, exec: { it: "Inclina il busto avanti di 20-30° e lascia aprire leggermente i gomiti. Scendi fino a portare la spalla poco sotto il gomito e risali spingendo forte.", en: "Lean torso forward 20-30° and flare elbows slightly. Descend until shoulders dip below elbows, press up." }, alt: { it: "Dip tra due panche, Panca declinata con manubri o Piegamenti profondi su parallettes.", en: "Bench Dips, Decline Dumbbell Press, or Deep Parallettes Push-ups." } },
+      { id: "pushups_standard", category: "bodyweight", primary: "chest", secondary: ["triceps", "shoulders_front", "abs"], name: { it: "Piegamenti a Terra (Push-Up)", en: "Push-Ups" }, exec: { it: "Corpo in linea rigida (addome e glutei contratti). Mani poco più larghe delle spalle, gomiti a 45°. Scendi sfiorando il pavimento col petto e risali.", en: "Rigid plank line. Hands slightly wider than shoulders, elbows at 45°. Touch chest lightly to floor and press up." }, alt: { it: "Piegamenti su rialzo (più facili) o Piegamenti archer / con zaino zavorrato (più difficili).", en: "Incline Push-ups (easier) or Archer / Weighted Backpack Push-ups (harder)." } },
+      { id: "ring_pushups", category: "calisthenics", primary: "chest", secondary: ["shoulders_front", "triceps", "abs"], name: { it: "Piegamenti agli Anelli (RTO)", en: "Ring Push-Ups" }, exec: { it: "Anelli bassi. Scendi mantenendo gli anelli vicini al petto; in cima distendi le braccia e ruota i palmi in avanti (RTO) per massima contrazione.", en: "Low rings. Lower keeping rings close to chest; at top lock out and turn palms forward (RTO)." }, alt: { it: "Piegamenti al TRX o Piegamenti su manubri esagonali instabili.", en: "TRX Push-ups or Push-ups on hex dumbbells." } },
+      // SCHIENA
+      { id: "pullups_pronated", category: "calisthenics", primary: "back_lats", secondary: ["biceps", "back_upper", "forearms"], name: { it: "Trazioni alla Sbarra (Presa Prona)", en: "Pull-Ups (Overhand)" }, exec: { it: "Presa poco più larga delle spalle. Attiva prima le scapole abbassandole, poi tira portando lo sterno verso la sbarra senza slanci.", en: "Grip slightly wider than shoulders. Depress scapulae first, pull sternum toward bar without kipping." }, alt: { it: "Lat Machine avanti, Trazioni assistite con elastico, oppure Australian Pull-Up.", en: "Lat Pulldown, Band-Assisted Pull-ups, or Inverted Rows." } },
+      { id: "chinups_supinated", category: "calisthenics", primary: "back_lats", secondary: ["biceps", "forearms"], name: { it: "Trazioni Presa Supina (Chin-Up)", en: "Chin-Ups (Underhand)" }, exec: { it: "Palmi rivolti verso di te a larghezza spalle. Tira i gomiti verso i fianchi fino a portare il mento sopra la sbarra, scendi controllato.", en: "Palms facing you at shoulder width. Drive elbows down until chin clears bar, lower with control." }, alt: { it: "Lat Machine presa inversa stretta o Rematore inverso presa supina.", en: "Underhand Close-Grip Lat Pulldown or Supinated Inverted Rows." } },
+      { id: "lat_pulldown", category: "bodybuilding", primary: "back_lats", secondary: ["biceps", "back_upper"], name: { it: "Lat Machine Avanti", en: "Lat Pulldown" }, exec: { it: "Blocca le cosce sotto i cuscinetti, inclina leggermente il busto indietro (10-15°). Tira la sbarra verso la parte alta del petto.", en: "Lock thighs under pads, lean back 10-15°. Pull bar to upper chest driving elbows down." }, alt: { it: "Trazioni alla sbarra o Pullover ai cavi / con manubrio.", en: "Pull-ups or Cable / Dumbbell Pullovers." } },
+      { id: "barbell_row", category: "bodybuilding", primary: "back_upper", secondary: ["back_lats", "biceps", "shoulders_rear"], name: { it: "Rematore con Bilanciere", en: "Barbell Bent-Over Row" }, exec: { it: "Busto inclinato a ~45°, schiena neutra e core contratto. Tira il bilanciere verso l'ombelico stringendo le scapole in cima.", en: "Torso hinged at ~45°, neutral spine, braced core. Row barbell toward navel squeezing scapulae." }, alt: { it: "Rematore con manubri su panca inclinati, T-Bar Row o Pulley basso.", en: "Chest-Supported Dumbbell Row, T-Bar Row, or Seated Cable Row." } },
+      { id: "seated_cable_row", category: "bodybuilding", primary: "back_upper", secondary: ["back_lats", "biceps", "shoulders_rear"], name: { it: "Pulley Basso (Seated Cable Row)", en: "Seated Cable Row" }, exec: { it: "Schiena dritta, ginocchia leggermente flesse. Lascia protrarre leggermente le scapole in allungamento, poi tira all'addome.", en: "Upright torso, slight knee bend. Allow scapulae to protract for stretch, pull handle to abdomen." }, alt: { it: "Rematore singolo con manubrio, Low Row Machine o Australian Pull-Up.", en: "Single-Arm Dumbbell Row, Seated Row Machine, or Inverted Rows." } },
+      { id: "single_arm_db_row", category: "bodybuilding", primary: "back_lats", secondary: ["back_upper", "biceps", "forearms"], name: { it: "Rematore con Manubrio (Unilaterale)", en: "Single-Arm Dumbbell Row" }, exec: { it: "Mano e ginocchio su panca. Tira il manubrio verso l'anca (non verso la spalla) per attivare al massimo il gran dorsale.", en: "Hand and knee on bench. Pull dumbbell toward hip (not shoulder) to maximize lat engagement." }, alt: { it: "Rematore singolo al cavo basso, con kettlebell o con zaino carico.", en: "Single-Arm Low Cable Row, Kettlebell Row, or Loaded Backpack Row." } },
+      { id: "australian_pullup", category: "bodyweight", primary: "back_upper", secondary: ["back_lats", "biceps", "shoulders_rear"], name: { it: "Australian Pull-Up (Rematore Inverso)", en: "Australian Pull-Ups (Inverted Row)" }, exec: { it: "Sotto una sbarra bassa o anelli, corpo teso con talloni a terra. Tira il petto verso la sbarra mantenendo glutei e addome attivi.", en: "Under a low bar or rings, body straight. Pull chest to bar keeping glutes and core engaged." }, alt: { it: "Rematore al TRX o sotto un tavolo solido.", en: "TRX Rows or Rows under a sturdy table." } },
+      { id: "front_lever_tuck", category: "calisthenics", primary: "back_lats", secondary: ["abs", "back_upper", "shoulders_rear"], name: { it: "Front Lever (Tuck / Advanced)", en: "Front Lever Hold" }, exec: { it: "Appeso alla sbarra a braccia tese, premi forte verso il basso con i dorsali portando il bacino all'altezza delle spalle.", en: "Hanging with straight arms, push down hard through lats bringing hips level with shoulders." }, alt: { it: "Pullover a braccia tese al cavo alto o Dragon Flag negative.", en: "Straight-Arm Cable Pulldowns or Negative Dragon Flags." } },
+      // SPALLE
+      { id: "overhead_press_barbell", category: "bodybuilding", primary: "shoulders_front", secondary: ["triceps", "shoulders_side", "abs"], name: { it: "Military Press (Lento Avanti Bilanciere)", en: "Barbell Overhead Press" }, exec: { it: "In piedi, glutei e addome contratti. Spingi il bilanciere dalla clavicola sopra la testa incastrando le spalle in cima.", en: "Standing, glutes and abs braced. Press bar from collarbone overhead, locking out at top." }, alt: { it: "Lento avanti manubri da seduto, Shoulder Press machine o Pike Push-Up.", en: "Seated Dumbbell Press, Shoulder Press Machine, or Pike Push-ups." } },
+      { id: "db_shoulder_press", category: "bodybuilding", primary: "shoulders_front", secondary: ["triceps", "shoulders_side"], name: { it: "Spinte in Alto con Manubri", en: "Dumbbell Shoulder Press" }, exec: { it: "Panca a 75°-85°. Tieni i gomiti leggermente avanti rispetto al piano delle spalle e spingi verso l'alto.", en: "Bench at 75°-85°. Keep elbows slightly forward in scapular plane and press up." }, alt: { it: "Shoulder Press alla macchina, Spinte kettlebell o Pike Push-Up su rialzo.", en: "Machine Shoulder Press, Kettlebell Press, or Elevated Pike Push-ups." } },
+      { id: "lateral_raise_db", category: "bodybuilding", primary: "shoulders_side", secondary: ["back_upper"], name: { it: "Alzate Laterali con Manubri", en: "Dumbbell Lateral Raises" }, exec: { it: "Busto leggermente flesso avanti, gomiti semi-tesi. Solleva i manubri verso l'esterno guidando con i gomiti fino all'altezza spalle.", en: "Slight forward lean, soft elbows. Raise dumbbells outward leading with elbows to shoulder height." }, alt: { it: "Alzate laterali ai cavi bassi, Lateral Raise Machine o con banda elastica.", en: "Cable Lateral Raises, Lateral Raise Machine, or Band Lateral Raises." } },
+      { id: "cable_lateral_raise", category: "bodybuilding", primary: "shoulders_side", secondary: ["back_upper"], name: { it: "Alzate Laterali al Cavo Basso", en: "Cable Lateral Raise" }, exec: { it: "Cavo all'altezza del polso. Esegui l'alzata laterale mantenendo tensione continua anche in basso.", en: "Pulley at wrist height. Perform lateral raise keeping constant tension at bottom." }, alt: { it: "Alzate laterali manubri su panca inclinata in appoggio laterale.", en: "Incline Side-Lying Dumbbell Lateral Raises." } },
+      { id: "face_pull", category: "bodybuilding", primary: "shoulders_rear", secondary: ["back_upper"], name: { it: "Face Pull ai Cavi", en: "Cable Face Pulls" }, exec: { it: "Cavo ad altezza viso con corda. Tira verso la fronte aprendo i gomiti ed extraruotando i polsi in fondo.", en: "Rope at face height. Pull toward forehead flaring elbows and externally rotating wrists." }, alt: { it: "Alzate a 90° con manubri su panca, Reverse Pec Deck o con elastico.", en: "Chest-Supported Rear Delt Flyes, Reverse Pec Deck, or Band Face Pulls." } },
+      { id: "reverse_pec_deck", category: "bodybuilding", primary: "shoulders_rear", secondary: ["back_upper"], name: { it: "Alzate Posteriori alla Macchina", en: "Reverse Pec Deck Fly" }, exec: { it: "Petto appoggiato allo schienale, spalle basse. Spingi le braccia indietro aprendo ad arco finché allineate al busto.", en: "Chest against pad, shoulders depressed. Sweep arms back until aligned with torso." }, alt: { it: "Croci inverse ai cavi incrociati o Alzate posteriori con manubri.", en: "Cross-Cable Rear Delt Flyes or Bent-Over Rear Delt Raises." } },
+      { id: "pike_pushup", category: "calisthenics", primary: "shoulders_front", secondary: ["triceps", "shoulders_side"], name: { it: "Pike Push-Up (Piegamenti a V)", en: "Pike Push-Ups" }, exec: { it: "Corpo a V rovesciata (bacino alto). Scendi portando la testa avanti rispetto alle mani e risali spingendo.", en: "Inverted V body position. Lower head forward ahead of hands and press back up." }, alt: { it: "Handstand Push-Up al muro o Pike Push-Up su panca.", en: "Wall Handstand Push-Ups or Bench Pike Push-Ups." } },
+      { id: "handstand_hold", category: "calisthenics", primary: "shoulders_front", secondary: ["triceps", "abs", "shoulders_side"], name: { it: "Verticale al Muro / Libera (Handstand)", en: "Wall / Freestanding Handstand" }, exec: { it: "Mani larghezza spalle, dita ben aperte. Spingi attivamente con le spalle verso l'alto e tieni l'addome chiuso.", en: "Hands shoulder-width, fingers splayed. Actively push tall through shoulders and keep ribs tucked." }, alt: { it: "Pike Hold con piedi su box/panca.", en: "Box/Bench Pike Hold." } },
+      // GAMBE
+      { id: "barbell_squat", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings", "abs"], name: { it: "Squat con Bilanciere (Back Squat)", en: "Barbell Back Squat" }, exec: { it: "Bilanciere sui trapezi, piedi larghezza spalle. Scendi rompendo il parallelo con ginocchia in linea con le punte, risali spingendo.", en: "Bar on traps, feet shoulder-width. Descend below parallel tracking knees over toes, drive up." }, alt: { it: "Hack Squat, Leg Press 45°, Goblet Squat o Squat bulgaro.", en: "Hack Squat, 45° Leg Press, Goblet Squat, or Bulgarian Split Squat." } },
+      { id: "leg_press", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings"], name: { it: "Leg Press 45°", en: "45° Leg Press" }, exec: { it: "Piedi a metà pedana larghezza spalle. Scendi al massimo senza sollevare la zona lombare dallo schienale, spingi senza iperestendere.", en: "Feet mid-sled. Lower deep without lifting lower back off pad, press without locking knees." }, alt: { it: "Hack Squat, Goblet Squat o Affondi camminati.", en: "Hack Squat, Goblet Squat, or Walking Lunges." } },
+      { id: "bulgarian_split_squat", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings"], name: { it: "Squat Bulgaro (Bulgarian Split Squat)", en: "Bulgarian Split Squat" }, exec: { it: "Collo del piede posteriore su panca. Scendi verticalmente con il ginocchio anteriore che avanza oltre la punta.", en: "Rear foot on bench. Drop straight down letting front knee travel over toes." }, alt: { it: "Affondi statici, Step-Up su box alto o Pistol Squat assistito.", en: "Static Lunges, High Box Step-Ups, or Assisted Pistol Squats." } },
+      { id: "leg_extension", category: "bodybuilding", primary: "quads", secondary: [], name: { it: "Leg Extension", en: "Leg Extension" }, exec: { it: "Ginocchio allineato al perno. Estendi completamente le gambe con 1s di fermo in cima, scendi controllando in 2-3s.", en: "Align knees with pivot. Extend legs fully with 1s squeeze at top, lower over 2-3s." }, alt: { it: "Sissy Squat, Reverse Nordic Curl o Spanish Squat con elastico.", en: "Sissy Squats, Reverse Nordic Curls, or Banded Spanish Squats." } },
+      { id: "romanian_deadlift", category: "bodybuilding", primary: "hamstrings", secondary: ["glutes", "back_upper", "forearms"], name: { it: "Stacco Rumeno (RDL)", en: "Romanian Deadlift (RDL)" }, exec: { it: "Ginocchia semi-bloccate a 15°. Spingi il bacino indietro con schiena piatta fino a massimo allungamento femorali, poi risali.", en: "Soft knees at 15°. Push hips straight back keeping spine flat until max hamstring stretch." }, alt: { it: "RDL con manubri, Good Morning, Hyperextension 45° o RDL monopodalico.", en: "Dumbbell RDL, Good Mornings, 45° Back Extensions, or Single-Leg RDL." } },
+      { id: "lying_leg_curl", category: "bodybuilding", primary: "hamstrings", secondary: ["calves"], name: { it: "Leg Curl Sdraiato / Seduto", en: "Lying / Seated Leg Curl" }, exec: { it: "Bacino ben aderente alla panca. Fletti le ginocchia portando i talloni verso i glutei e controlla la fase negativa.", en: "Keep hips pressed into pad. Curl heels toward glutes and control eccentric." }, alt: { it: "Nordic Hamstring Curl, Leg Curl con manubrio tra i piedi o Slider Leg Curl.", en: "Nordic Hamstring Curls, Dumbbell Leg Curl, or Slider Leg Curls." } },
+      { id: "hip_thrust", category: "bodybuilding", primary: "glutes", secondary: ["hamstrings", "quads"], name: { it: "Hip Thrust con Bilanciere", en: "Barbell Hip Thrust" }, exec: { it: "Scapole sul bordo panca, tibie verticali in cima. Spingi sui talloni portando il bacino in retroversione con 1s di contrazione.", en: "Upper back on bench edge, shins vertical at lockout. Drive through heels with 1s squeeze." }, alt: { it: "Glute Bridge a terra (zavorrato o monopodalico).", en: "Floor Glute Bridge (weighted or single-leg)." } },
+      { id: "pistol_squat", category: "calisthenics", primary: "quads", secondary: ["glutes", "calves", "abs"], name: { it: "Pistol Squat (Squat su una gamba)", en: "Pistol Squat" }, exec: { it: "In equilibrio su una gamba, l'altra tesa avanti. Scendi in accosciata completa col tallone a terra e risali.", en: "Balance on one leg, other extended forward. Squat all the way down keeping heel planted." }, alt: { it: "Pistol Squat su box, Shrimp Squat o Squat bulgaro a corpo libero.", en: "Box Pistol Squat, Shrimp Squat, or Bodyweight Bulgarian Split Squat." } },
+      { id: "standing_calf_raise", category: "bodybuilding", primary: "calves", secondary: [], name: { it: "Calf Raise in Piedi", en: "Standing Calf Raise" }, exec: { it: "Avampiedi su rialzo. Scendi 2s in allungamento, pausa di 1s in basso per eliminare il rimbalzo, poi sali sulle punte.", en: "Balls of feet on step. Lower heels 2s, pause 1s at bottom, then press up onto toes." }, alt: { it: "Calf singolo su gradino con manubrio o Calf alla Leg Press.", en: "Single-Leg Step Calf Raise or Leg Press Calf Raise." } },
+      // BRACCIA
+      { id: "barbell_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Curl con Bilanciere / EZ", en: "Barbell / EZ-Bar Curl" }, exec: { it: "Gomiti fermi lungo i fianchi. Fletti l'avambraccio verso le spalle senza dondolare con la schiena, scendi controllato.", en: "Elbows pinned to sides. Curl bar toward shoulders without swinging torso." }, alt: { it: "Curl alternato manubri, Curl al cavo basso o Pelican Curl agli anelli.", en: "Alternating Dumbbell Curls, Low Cable Curls, or Ring Pelican Curls." } },
+      { id: "incline_db_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Curl su Panca Inclinata (Manubri)", en: "Incline Dumbbell Curl" }, exec: { it: "Panca a 45°-60°, braccia perpendicolari dietro il busto. Esegui il curl mantenendo i gomiti puntati verso il basso.", en: "Bench at 45°-60°, arms hanging behind torso. Curl keeping elbows pointed down." }, alt: { it: "Bayesian Curl al cavo basso (di spalle al cavo).", en: "Behind-the-Back Bayesian Cable Curl." } },
+      { id: "hammer_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Hammer Curl (Presa a Martello)", en: "Dumbbell Hammer Curl" }, exec: { it: "Palmi rivolti l'uno verso l'altro (presa neutra). Solleva i manubri con polsi dritti per colpire bicipite e brachioradiale.", en: "Neutral grip. Curl dumbbells keeping wrists straight to target biceps and brachioradialis." }, alt: { it: "Hammer Curl ai cavi con corda o Curl con elastico presa neutra.", en: "Rope Cable Hammer Curls or Neutral-Grip Band Curls." } },
+      { id: "tricep_pushdown", category: "bodybuilding", primary: "triceps", secondary: [], name: { it: "Pushdown ai Cavi (Corda / Barra)", en: "Cable Tricep Pushdown" }, exec: { it: "Gomiti bloccati ai fianchi. Estendi completamente l'avambraccio verso il basso aprendo leggermente la corda in fondo.", en: "Elbows locked at sides. Extend forearms fully downward, flaring rope at bottom." }, alt: { it: "French Press con manubri, Kickback o Estensioni tricipiti con elastico.", en: "Dumbbell Skullcrushers, Kickbacks, or Band Tricep Pushdowns." } },
+      { id: "overhead_tricep_ext", category: "bodybuilding", primary: "triceps", secondary: [], name: { it: "French Press / Estensioni Sopra la Testa", en: "Overhead Tricep Extension" }, exec: { it: "Con cavo basso, bilanciere EZ o manubrio dietro la testa. Lascia scendere l'avambraccio per massimo allungamento, poi estendi.", en: "Using low cable, EZ-bar, or dumbbell behind head. Let forearms drop for stretch, extend overhead." }, alt: { it: "Bodyweight Tricep Extension sotto sbarra bassa o contro panca.", en: "Bodyweight Tricep Extensions." } },
+      { id: "close_grip_bench", category: "bodybuilding", primary: "triceps", secondary: ["chest", "shoulders_front"], name: { it: "Panca Presa Stretta / Diamond Push-Up", en: "Close-Grip Bench / Diamond Push-Up" }, exec: { it: "Mani a larghezza spalle (o a diamante a terra), gomiti vicini al busto durante discesa e spinta.", en: "Hands shoulder-width (or diamond on floor), keep elbows tucked close to ribs." }, alt: { it: "Dip alle parallele con busto eretto.", en: "Upright Tricep Dips." } },
+      // CORE & SKILLS
+      { id: "hanging_leg_raise", category: "calisthenics", primary: "abs", secondary: ["forearms"], name: { it: "Hanging Leg Raise alla Sbarra", en: "Hanging Leg Raises" }, exec: { it: "Appeso alla sbarra, solleva le gambe tese (o ginocchia) arrotolando il bacino verso l'alto (retroversione).", en: "Hanging from bar, raise straight legs by curling pelvis upward (posterior tilt)." }, alt: { it: "Reverse Crunch su panca o Leg Raise a terra.", en: "Bench Reverse Crunches or Floor Leg Raises." } },
+      { id: "cable_crunch", category: "bodybuilding", primary: "abs", secondary: [], name: { it: "Crunch al Cavo Alto", en: "Kneeling Cable Crunch" }, exec: { it: "In ginocchio con corda ai lati della testa. Arrotola la colonna portando i gomiti verso le cosce tenendo fermo il bacino.", en: "Kneeling with rope beside head. Curl spine bringing elbows toward thighs." }, alt: { it: "Crunch con disco zavorrato o Ab Wheel Rollout.", en: "Weighted Plate Crunches or Ab Wheel Rollouts." } },
+      { id: "ab_wheel_rollout", category: "calisthenics", primary: "abs", secondary: ["back_lats", "shoulders_front"], name: { it: "Ab Wheel Rollout / Plank Walkout", en: "Ab Wheel Rollout" }, exec: { it: "Parti in retroversione del bacino. Scivola avanti mantenendo l'addome teso senza far crollare la lombare, poi richiudi.", en: "Start with posterior pelvic tilt. Roll forward bracing core without sagging lower back." }, alt: { it: "Ring Fallout o Walkout sulle mani da posizione plank.", en: "Ring Fallouts or Hand Walkouts." } },
+      { id: "lsit_hold", category: "calisthenics", primary: "abs", secondary: ["triceps", "quads", "shoulders_front"], name: { it: "L-Sit (Parallele o a Terra)", en: "L-Sit Hold" }, exec: { it: "Spingi forte le spalle verso il basso deprimendo le scapole e solleva le gambe tese parallele al pavimento.", en: "Depress shoulders hard and hold straight legs parallel to ground." }, alt: { it: "Tuck L-Sit (ginocchia raccolte) o L-Sit su manubri.", en: "Tuck L-Sit or L-Sit on dumbbells." } },
+      { id: "muscle_up_bar", category: "calisthenics", primary: "back_lats", secondary: ["chest", "triceps", "biceps", "abs"], name: { it: "Muscle-Up alla Sbarra / Anelli", en: "Bar / Ring Muscle-Up" }, exec: { it: "Trazione esplosiva portando il petto sopra la sbarra, transizione rapida dei polsi sopra la sbarra e spinta finale in dip.", en: "Explosive pull bringing chest above bar, fast wrist transition, finish with straight bar dip." }, alt: { it: "High Pull-Up esplosivi + Dip profondi su sbarra dritta.", en: "Explosive High Pull-Ups + Deep Straight-Bar Dips." } },
+      // MOBILITÀ & STRETCHING
+      { id: "worlds_greatest_stretch", category: "mobility", primary: "mobility", secondary: ["hamstrings", "glutes", "chest"], name: { it: "World's Greatest Stretch", en: "World's Greatest Stretch" }, exec: { it: "Affondo lungo avanti, porta il gomito interno verso la caviglia per aprire l'anca, poi ruota il torace aprendo il braccio in alto. 5 rip/lato.", en: "Deep lunge, drop inside elbow toward ankle, then rotate thoracic spine reaching arm to ceiling. 5 reps/side." }, alt: { it: "Affondo con torsione toracica in piedi.", en: "Standing Lunge with Thoracic Twist." } },
+      { id: "thoracic_extension_foam", category: "mobility", primary: "mobility", secondary: ["back_upper", "chest"], name: { it: "Estensione Toracica & Shoulder Dislocates", en: "Thoracic Extension & Dislocates" }, exec: { it: "Con bastone o elastico ampio, porta le braccia tese da davanti fin dietro la schiena senza inarcare la lombare.", en: "With dowel or wide band, pass straight arms from front to behind back without arching lower back." }, alt: { it: "Cat-Cow (Gatto-Mucca) a terra + Thread the Needle.", en: "Floor Cat-Cow + Thread the Needle." } },
+      { id: "90_90_hip_switches", category: "mobility", primary: "mobility", secondary: ["glutes"], name: { it: "90/90 Hip Switches (Mobilità Anche)", en: "90/90 Hip Switches" }, exec: { it: "Seduto a terra con entrambe le ginocchia a 90°. Ruota le ginocchia da un lato all'altro mantenendo il busto alto.", en: "Seated on floor with both knees at 90°. Rotate knees side-to-side keeping torso tall." }, alt: { it: "Pigeon Pose dinamica.", en: "Dynamic Pigeon Pose." } },
+      { id: "couch_stretch", category: "stretching", primary: "mobility", secondary: ["quads"], name: { it: "Couch Stretch (Flessori Anca / Quad)", en: "Couch Stretch (Hip Flexor & Quad)" }, exec: { it: "Ginocchio posteriore contro un muro/panca con tibia verticale, piede anteriore a 90°. Contrai il gluteo posteriore 45-60s/lato.", en: "Back knee against wall/bench with vertical shin, front foot at 90°. Squeeze rear glute 45-60s/side." }, alt: { it: "Affondo basso con retroversione del bacino.", en: "Low Lunge with Posterior Pelvic Tilt." } },
+      { id: "dead_hang_decompression", category: "stretching", primary: "mobility", secondary: ["back_lats", "forearms", "shoulders_front"], name: { it: "Dead Hang (Sospensione alla Sbarra)", en: "Bar Dead Hang Decompression" }, exec: { it: "Appeso alla sbarra con presa prona rilassando completamente spalle e colonna vertebrale per decomprimere i dischi. 30-60s.", en: "Hang from bar relaxing shoulders and spine to decompress discs. 30-60s." }, alt: { it: "Child's Pose con braccia tese avanti.", en: "Extended Child's Pose." } },
+      { id: "doorway_pec_stretch", category: "stretching", primary: "mobility", secondary: ["chest", "shoulders_front"], name: { it: "Stretching Pettorali al Muro / Stipite", en: "Wall / Doorway Pec Stretch" }, exec: { it: "Avambraccio appoggiato allo stipite o al rack con gomito a 90°-120°. Ruota leggermente il busto dal lato opposto per 30-45s/lato.", en: "Forearm against rack/doorway with elbow at 90°-120°. Gently rotate torso away 30-45s/side." }, alt: { it: "Scorpion Stretch prono a terra.", en: "Prone Floor Scorpion Stretch." } }
+    ];
+
+    // ================= DIZIONARIO BILINGUE (IT / EN) =================
+    const I18N = {
+      it: {
+        nav_workout: "Workout", nav_routines: "Schede", nav_exercises: "Esercizi", nav_analytics: "Analisi & Cal", nav_coach: "AI Coach",
+        active_workout: "Allenamento Attivo", no_active_workout: "Nessun allenamento avviato",
+        start_from_routine: "Scegli una scheda qui sotto o avvia un allenamento libero per iniziare a tracciare.",
+        free_workout: "+ Allenamento Libero", finish_workout: "Termina & Salva", cancel_workout: "Annulla",
+        add_exercise: "+ Aggiungi Esercizio", add_set: "+ Aggiungi Serie", rest_timer: "Recupero",
+        prev_session: "Prec:", no_prev: "Prima volta", notes_placeholder: "Note tecniche, setup sedile, sensazioni...",
+        create_routine: "+ Nuova Scheda", routine_name: "Nome Scheda (es. Push A)", save_routine: "Salva Scheda",
+        start_routine: "Avvia", search_ex: "Cerca esercizio o muscolo...",
+        cat_all: "Tutti", cat_bodybuilding: "Bodybuilding", cat_bodyweight: "Corpo Libero", cat_calisthenics: "Calisthenics", cat_mobility: "Mobilità", cat_stretching: "Stretching",
+        exec_label: "Esecuzione Sintetica", alt_label: "Alternative senza macchinari",
+        muscle_volume: "Volume Muscolare & Stato Recupero", smart_calendar: "Calendario & Programmazione Recupero",
+        next_suggested: "Prossima Sessione Consigliata:", progression_charts: "Progressione Carichi & 1RM",
+        est_1rm: "1RM Stimato (kg)", coach_title: "APEX AI Coach",
+        coach_subtitle: "Analisi basata sui tuoi dati reali di volume, RIR e recupero",
+        save_key: "Salva Key", coach_placeholder: "Chiedi consigli su stalli, volume, tecnica o programmazione...",
+        send: "Invia", export_json: "Esporta Backup JSON", import_json: "Importa Backup JSON",
+        workout_saved: "Allenamento salvato nello storico!", series_unit: "serie eff."
+      },
+      en: {
+        nav_workout: "Workout", nav_routines: "Routines", nav_exercises: "Exercises", nav_analytics: "Analytics & Cal", nav_coach: "AI Coach",
+        active_workout: "Active Workout", no_active_workout: "No active workout",
+        start_from_routine: "Pick a routine below or start a freestyle session to log sets.",
+        free_workout: "+ Freestyle Workout", finish_workout: "Finish & Save", cancel_workout: "Cancel",
+        add_exercise: "+ Add Exercise", add_set: "+ Add Set", rest_timer: "Rest Timer",
+        prev_session: "Prev:", no_prev: "First time", notes_placeholder: "Form cues, seat height, feel...",
+        create_routine: "+ New Routine", routine_name: "Routine Name (e.g. Push A)", save_routine: "Save Routine",
+        start_routine: "Start", search_ex: "Search exercise or muscle...",
+        cat_all: "All", cat_bodybuilding: "Bodybuilding", cat_bodyweight: "Bodyweight", cat_calisthenics: "Calisthenics", cat_mobility: "Mobility", cat_stretching: "Stretching",
+        exec_label: "Quick Execution", alt_label: "Equipment-Free / Machine Alternatives",
+        muscle_volume: "Muscle Volume & Recovery Status", smart_calendar: "Smart Calendar & Recovery Planner",
+        next_suggested: "Next Recommended Session:", progression_charts: "Load & 1RM Progression",
+        est_1rm: "Estimated 1RM (kg)", coach_title: "APEX AI Coach",
+        coach_subtitle: "Insights powered by your real volume, RIR & recovery logs",
+        save_key: "Save Key", coach_placeholder: "Ask about plateaus, volume, form, or programming...",
+        send: "Send", export_json: "Export JSON Backup", import_json: "Import JSON Backup",
+        workout_saved: "Workout saved to history!", series_unit: "eff. sets"
+      }
+    };
+
+    const DEFAULT_ROUTINES = [
+      { id: "preset_upper", name: "UPPER BODY (Preset)", exercises: ["bench_press_barbell", "barbell_row", "incline_db_press", "lat_pulldown", "lateral_raise_db", "barbell_curl", "tricep_pushdown"] },
+      { id: "preset_lower", name: "LOWER BODY (Preset)", exercises: ["barbell_squat", "romanian_deadlift", "leg_press", "lying_leg_curl", "standing_calf_raise", "hanging_leg_raise"] },
+      { id: "preset_push", name: "PUSH (Preset)", exercises: ["bench_press_barbell", "incline_db_press", "overhead_press_barbell", "cable_fly", "lateral_raise_db", "overhead_tricep_ext", "tricep_pushdown"] },
+      { id: "preset_pull", name: "PULL (Preset)", exercises: ["pullups_pronated", "barbell_row", "seated_cable_row", "face_pull", "incline_db_curl", "hammer_curl"] }
+    ];
+
+    let state = {
+      lang: localStorage.getItem('apex_lang') || 'it',
+      routines: JSON.parse(localStorage.getItem('apex_routines')) || DEFAULT_ROUTINES,
+      history: JSON.parse(localStorage.getItem('apex_history')) || [],
+      activeWorkout: JSON.parse(localStorage.getItem('apex_active_workout')) || null,
+      geminiKey: localStorage.getItem('apex_gemini_key') || '',
+      timer: { defaultSeconds: 180, remaining: 180, running: false, interval: null },
+      currentTab: 'workout',
+      selectedChartEx: 'bench_press_barbell',
+      calendarMonthOffset: 0,
+      chatMessages: []
+    };
+
+    function saveState() {
+      localStorage.setItem('apex_lang', state.lang);
+      localStorage.setItem('apex_routines', JSON.stringify(state.routines));
+      localStorage.setItem('apex_history', JSON.stringify(state.history));
+      localStorage.setItem('apex_active_workout', JSON.stringify(state.activeWorkout));
+      localStorage.setItem('apex_gemini_key', state.geminiKey);
+    }
+
+    function t(key) { return I18N[state.lang][key] || key; }
+    function getExercise(id) {
+      return EXERCISES_DB.find(e => e.id === id) || { id, category: 'bodybuilding', primary: 'chest', secondary: [], name: { it: id, en: id }, exec: { it: '', en: '' }, alt: { it: '', en: '' } };
+    }
+
+    async function requestWakeLock() {
+      try { if ('wakeLock' in navigator && state.activeWorkout) await navigator.wakeLock.request('screen'); } catch (e) {}
+    }
+
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.35);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } catch (e) {}
+    }
+
+    function formatTime(sec) {
+      return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+      const disp = document.getElementById('timer-display');
+      const bar = document.getElementById('timer-progress');
+      const toggleBtn = document.getElementById('timer-toggle-btn');
+      if (!disp) return;
+      disp.textContent = formatTime(state.timer.remaining);
+      if (bar) bar.style.width = `${Math.min(100, (state.timer.remaining / Math.max(1, state.timer.defaultSeconds)) * 100)}%`;
+      if (toggleBtn) toggleBtn.textContent = state.timer.running ? '⏸' : '▶';
+    }
+
+    function startTimer(customSec = null) {
+      if (customSec !== null) { state.timer.defaultSeconds = customSec; state.timer.remaining = customSec; }
+      clearInterval(state.timer.interval);
+      state.timer.running = true;
+      updateTimerUI();
+      state.timer.interval = setInterval(() => {
+        if (state.timer.remaining > 0) { state.timer.remaining--; updateTimerUI(); }
+        else { clearInterval(state.timer.interval); state.timer.running = false; updateTimerUI(); playBeep(); }
+      }, 1000);
+    }
+
+    function toggleTimer() {
+      if (state.timer.running) { clearInterval(state.timer.interval); state.timer.running = false; updateTimerUI(); }
+      else { if (state.timer.remaining === 0) state.timer.remaining = state.timer.defaultSeconds; startTimer(); }
+    }
+
+    function adjustTimer(delta) {
+      state.timer.remaining = Math.max(0, state.timer.remaining + delta);
+      if (state.timer.remaining > state.timer.defaultSeconds) state.timer.defaultSeconds = state.timer.remaining;
+      updateTimerUI();
+    }
+
+    function editTimerManual() {
+      const val = prompt(state.lang === 'it' ? "Inserisci recupero in secondi (es. 180 = 3 min):" : "Enter rest time in seconds (e.g. 180 = 3 min):", state.timer.remaining);
+      if (val !== null && !isNaN(parseInt(val))) {
+        const sec = Math.max(5, parseInt(val));
+        state.timer.defaultSeconds = sec; state.timer.remaining = sec; updateTimerUI();
+      }
+    }
+
+    function startWorkout(routineId = null) {
+      const routine = routineId ? state.routines.find(r => r.id === routineId) : null;
+      state.activeWorkout = {
+        id: 'w_' + Date.now(),
+        name: routine ? routine.name : (state.lang === 'it' ? 'Allenamento Libero' : 'Freestyle Workout'),
+        routineId, startTime: Date.now(),
+        exercises: routine ? routine.exercises.map(exId => ({
+          exerciseId: exId, notes: '', sets: [{ type: 'N', weight: '', reps: '', rir: '2', rpe: '8', done: false }]
+        })) : []
+      };
+      saveState(); requestWakeLock(); switchTab('workout');
+    }
+
+    function getPreviousPerformance(exerciseId) {
+      for (let i = state.history.length - 1; i >= 0; i--) {
+        const found = state.history[i].exercises.find(e => e.exerciseId === exerciseId);
+        if (found && found.sets.some(s => s.done)) {
+          const valid = found.sets.filter(s => s.done && s.type !== 'W');
+          const list = valid.length ? valid : found.sets.filter(s => s.done);
+          return list.map(s => `${s.weight || 0}kg×${s.reps || 0}${s.rir !== '' ? `@RIR${s.rir}` : ''}`).join(' | ');
+        }
+      }
+      return null;
+    }
+
+    function addSetToActive(exIndex) {
+      const ex = state.activeWorkout.exercises[exIndex];
+      const last = ex.sets[ex.sets.length - 1] || { type: 'N', weight: '', reps: '', rir: '2', rpe: '8' };
+      ex.sets.push({ ...last, done: false });
+      saveState(); renderWorkoutTab();
+    }
+
+    function updateSetField(exIndex, setIndex, field, value) {
+      state.activeWorkout.exercises[exIndex].sets[setIndex][field] = value;
+      if (field === 'done' && value === true) startTimer(state.timer.defaultSeconds);
+      saveState();
+      if (field === 'done' || field === 'type') renderWorkoutTab();
+    }
+
+    function removeSet(exIndex, setIndex) {
+      state.activeWorkout.exercises[exIndex].sets.splice(setIndex, 1);
+      saveState(); renderWorkoutTab();
+    }
+
+    function finishWorkout() {
+      if (!state.activeWorkout) return;
+      const durationMin = Math.max(1, Math.round((Date.now() - state.activeWorkout.startTime) / 60000));
+      let totalVolume = 0;
+      state.activeWorkout.exercises.forEach(ex => ex.sets.forEach(s => {
+        if (s.done) totalVolume += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+      }));
+      state.history.push({ ...state.activeWorkout, date: new Date().toISOString(), durationMin, totalVolume });
+      state.activeWorkout = null;
+      clearInterval(state.timer.interval); state.timer.running = false;
+      saveState(); alert(t('workout_saved')); switchTab('analytics');
+    }
+
+    function calculateMuscleStats(daysBack = 7) {
+      const cutoff = Date.now() - daysBack * 86400000;
+      const stats = {};
+      Object.keys(MUSCLE_GROUPS).forEach(m => stats[m] = { sets: 0, lastTrained: null, recoveryPct: 100 });
+      state.history.forEach(w => {
+        const wTime = new Date(w.date).getTime();
+        w.exercises.forEach(exItem => {
+          const dbEx = getExercise(exItem.exerciseId);
+          const workingSets = exItem.sets.filter(s => s.done && s.type !== 'W').length;
+          if (workingSets > 0) {
+            if (!stats[dbEx.primary].lastTrained || wTime > stats[dbEx.primary].lastTrained) stats[dbEx.primary].lastTrained = wTime;
+            if (wTime >= cutoff) {
+              stats[dbEx.primary].sets += workingSets;
+              (dbEx.secondary || []).forEach(sec => { if (stats[sec]) stats[sec].sets += workingSets * 0.5; });
+            }
+          }
+        });
+      });
+      const now = Date.now();
+      Object.keys(stats).forEach(m => {
+        const reqHours = MUSCLE_GROUPS[m].recoveryHours;
+        if (stats[m].lastTrained && reqHours > 0) {
+          stats[m].recoveryPct = Math.min(100, Math.round(((now - stats[m].lastTrained) / 3600000 / reqHours) * 100));
+        }
+      });
+      return stats;
+    }
+
+    function getSuggestedNextWorkout() {
+      if (!state.routines.length) return null;
+      const muscleStats = calculateMuscleStats(7);
+      let bestRoutine = state.routines[0], bestScore = -1;
+      state.routines.forEach(r => {
+        if (!r.exercises.length) return;
+        let sumRec = 0;
+        r.exercises.forEach(exId => { sumRec += (muscleStats[getExercise(exId).primary]?.recoveryPct ?? 100); });
+        const avgRec = sumRec / r.exercises.length;
+        if (avgRec > bestScore) { bestScore = avgRec; bestRoutine = r; }
+      });
+      return { routine: bestRoutine, readiness: Math.round(bestScore) };
+    }
+
+    function getExerciseProgression(exerciseId) {
+      const points = [];
+      state.history.forEach(w => {
+        const ex = w.exercises.find(e => e.exerciseId === exerciseId);
+        if (ex) {
+          let max1RM = 0, vol = 0;
+          ex.sets.forEach(s => {
+            if (s.done && s.type !== 'W') {
+              const kg = parseFloat(s.weight) || 0, reps = parseInt(s.reps) || 0;
+              vol += kg * reps;
+              const est = kg * (1 + reps / 30);
+              if (est > max1RM) max1RM = est;
+            }
+          });
+          if (max1RM > 0 || vol > 0) {
+            points.push({
+              date: new Date(w.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: '2-digit' }),
+              oneRM: Math.round(max1RM * 10) / 10, volume: Math.round(vol)
+            });
+          }
+        }
+      });
+      return points;
+    }
+
+    function switchTab(tab) {
+      state.currentTab = tab;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      renderCurrentView();
+    }
+
+    function toggleLanguage() {
+      state.lang = state.lang === 'it' ? 'en' : 'it';
+      saveState(); updateStaticLabels(); renderCurrentView();
+    }
+
+    function updateStaticLabels() {
+      document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+      const langBtn = document.getElementById('lang-toggle');
+      if (langBtn) langBtn.textContent = state.lang.toUpperCase();
+    }
+
+    function renderCurrentView() {
+      if (state.currentTab === 'workout') renderWorkoutTab();
+      else if (state.currentTab === 'routines') renderRoutinesTab();
+      else if (state.currentTab === 'exercises') renderExercisesTab();
+      else if (state.currentTab === 'analytics') renderAnalyticsTab();
+      else if (state.currentTab === 'coach') renderCoachTab();
+    }
+
+    function renderWorkoutTab() {
+      const container = document.getElementById('main-content');
+      if (!state.activeWorkout) {
+        const suggestion = getSuggestedNextWorkout();
+        container.innerHTML = `
+          <div class="card hero-card">
+            <div class="badge-orange">${t('no_active_workout')}</div>
+            <h2 style="margin-top:6px">${state.lang === 'it' ? 'Pronto a spingere?' : 'Ready to lift?'}</h2>
+            <p class="muted" style="margin-top:4px">${t('start_from_routine')}</p>
+            ${suggestion ? `
+              <div class="suggestion-box">
+                <span>🔥 ${t('next_suggested')} <strong>${suggestion.routine.name}</strong> (${suggestion.readiness}% ${state.lang === 'it' ? 'recupero' : 'recovered'})</span>
+                <button class="btn-primary btn-sm" onclick="startWorkout('${suggestion.routine.id}')">${t('start_routine')}</button>
+              </div>
+            ` : ''}
+            <button class="btn-outline full-width" style="margin-top:12px" onclick="startWorkout()">${t('free_workout')}</button>
+          </div>
+          <h3 class="section-title">${t('nav_routines')}</h3>
+          <div class="grid-cards">
+            ${state.routines.map(r => `
+              <div class="card routine-quick-card" onclick="startWorkout('${r.id}')">
+                <div>
+                  <div class="card-title">${r.name}</div>
+                  <div class="muted small">${r.exercises.length} ${state.lang === 'it' ? 'esercizi' : 'exercises'}</div>
+                </div>
+                <span class="arrow-orange">▶</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="workout-header-bar">
+          <div><span class="badge-orange">${t('active_workout')}</span><h2>${state.activeWorkout.name}</h2></div>
+          <div class="row-gap">
+            <button class="btn-danger-ghost" onclick="if(confirm('Annullare?')){state.activeWorkout=null;saveState();renderWorkoutTab();}">${t('cancel_workout')}</button>
+            <button class="btn-primary" onclick="finishWorkout()">${t('finish_workout')}</button>
+          </div>
+        </div>
+        <div class="workout-exercises-list">
+          ${state.activeWorkout.exercises.map((exItem, exIdx) => {
+            const dbEx = getExercise(exItem.exerciseId);
+            const prev = getPreviousPerformance(exItem.exerciseId);
+            return `
+              <div class="card exercise-log-card">
+                <div class="ex-log-header">
+                  <div>
+                    <div class="card-title">${dbEx.name[state.lang]}</div>
+                    <div class="prev-ghost">${t('prev_session')} ${prev || t('no_prev')}</div>
+                  </div>
+                  <button class="btn-icon" onclick="showExerciseModal('${dbEx.id}')">ℹ️</button>
+                </div>
+                <input type="text" class="notes-input" placeholder="${t('notes_placeholder')}" value="${exItem.notes || ''}"
+                  onchange="state.activeWorkout.exercises[${exIdx}].notes=this.value;saveState();">
+                <div class="sets-table">
+                  <div class="sets-head"><span>#</span><span>Tipo</span><span>KG</span><span>RIP</span><span>RIR</span><span>RPE</span><span>✓</span></div>
+                  ${exItem.sets.map((s, sIdx) => `
+                    <div class="set-row ${s.done ? 'set-done' : ''}">
+                      <span class="set-num" onclick="removeSet(${exIdx},${sIdx})">${sIdx + 1}</span>
+                      <select class="set-select type-${s.type}" onchange="updateSetField(${exIdx},${sIdx},'type',this.value)">
+                        <option value="N" ${s.type==='N'?'selected':''}>N</option>
+                        <option value="W" ${s.type==='W'?'selected':''}>W</option>
+                        <option value="D" ${s.type==='D'?'selected':''}>D</option>
+                        <option value="F" ${s.type==='F'?'selected':''}>F</option>
+                        <option value="RP" ${s.type==='RP'?'selected':''}>RP</option>
+                      </select>
+                      <input type="number" step="0.5" inputmode="decimal" class="set-input" placeholder="0" value="${s.weight}" onchange="updateSetField(${exIdx},${sIdx},'weight',this.value)">
+                      <input type="number" inputmode="numeric" class="set-input" placeholder="0" value="${s.reps}" onchange="updateSetField(${exIdx},${sIdx},'reps',this.value)">
+                      <input type="number" min="0" max="10" inputmode="numeric" class="set-input" placeholder="-" value="${s.rir}" onchange="updateSetField(${exIdx},${sIdx},'rir',this.value)">
+                      <input type="number" step="0.5" min="1" max="10" inputmode="decimal" class="set-input" placeholder="-" value="${s.rpe}" onchange="updateSetField(${exIdx},${sIdx},'rpe',this.value)">
+                      <input type="checkbox" class="set-check" ${s.done ? 'checked' : ''} onchange="updateSetField(${exIdx},${sIdx},'done',this.checked)">
+                    </div>
+                  `).join('')}
+                </div>
+                <button class="btn-outline btn-sm full-width" style="margin-top:10px" onclick="addSetToActive(${exIdx})">${t('add_set')}</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="card" style="margin-top:16px">
+          <label class="small muted">${t('add_exercise')}</label>
+          <div class="row-gap" style="margin-top:8px">
+            <select id="quick-add-ex-select" class="input-field">
+              ${EXERCISES_DB.map(e => `<option value="${e.id}">${e.name[state.lang]} (${MUSCLE_GROUPS[e.primary][state.lang]})</option>`).join('')}
+            </select>
+            <button class="btn-primary" onclick="
+              const sel = document.getElementById('quick-add-ex-select').value;
+              state.activeWorkout.exercises.push({exerciseId: sel, notes:'', sets:[{type:'N',weight:'',reps:'',rir:'2',rpe:'8',done:false}]});
+              saveState(); renderWorkoutTab();
+            ">+</button>
+          </div>
+        </div>
+      `;
+    }
+
+    let editingRoutineId = null, tempRoutineExercises = [];
+    function renderRoutinesTab() {
+      const container = document.getElementById('main-content');
+      container.innerHTML = `
+        <div class="workout-header-bar">
+          <h2>${t('nav_routines')}</h2>
+          <button class="btn-primary" onclick="openRoutineBuilder()">${t('create_routine')}</button>
+        </div>
+        <div id="routine-builder-box" class="card" style="display:none; border-color: var(--orange);">
+          <h3>${t('create_routine')}</h3>
+          <input type="text" id="builder-name" class="input-field" placeholder="${t('routine_name')}" style="margin:10px 0">
+          <div class="row-gap">
+            <select id="builder-ex-select" class="input-field">
+              ${EXERCISES_DB.map(e => `<option value="${e.id}">${e.name[state.lang]} — ${MUSCLE_GROUPS[e.primary][state.lang]}</option>`).join('')}
+            </select>
+            <button class="btn-outline" onclick="tempRoutineExercises.push(document.getElementById('builder-ex-select').value);renderBuilderList();">+</button>
+          </div>
+          <div id="builder-ex-list" style="margin:12px 0"></div>
+          <div class="row-gap">
+            <button class="btn-primary" onclick="saveRoutineBuilder()">${t('save_routine')}</button>
+            <button class="btn-danger-ghost" onclick="document.getElementById('routine-builder-box').style.display='none'">${t('cancel_workout')}</button>
+          </div>
+        </div>
+        <div class="grid-cards">
+          ${state.routines.map(r => `
+            <div class="card">
+              <div class="ex-log-header">
+                <div class="card-title">${r.name}</div>
+                <div class="row-gap">
+                  <button class="btn-primary btn-sm" onclick="startWorkout('${r.id}')">${t('start_routine')}</button>
+                  <button class="btn-icon" onclick="openRoutineBuilder('${r.id}')">✏️</button>
+                  <button class="btn-icon" onclick="deleteRoutine('${r.id}')">🗑️</button>
+                </div>
+              </div>
+              <ul class="routine-ex-preview">${r.exercises.map(id => `<li>• ${getExercise(id).name[state.lang]}</li>`).join('')}</ul>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function openRoutineBuilder(id = null) {
+      editingRoutineId = id;
+      document.getElementById('routine-builder-box').style.display = 'block';
+      if (id) {
+        const r = state.routines.find(x => x.id === id);
+        document.getElementById('builder-name').value = r.name;
+        tempRoutineExercises = [...r.exercises];
+      } else {
+        document.getElementById('builder-name').value = '';
+        tempRoutineExercises = [];
+      }
+      renderBuilderList();
+    }
+
+    function renderBuilderList() {
+      document.getElementById('builder-ex-list').innerHTML = tempRoutineExercises.map((id, idx) => `
+        <div class="builder-item">
+          <span>${idx + 1}. ${getExercise(id).name[state.lang]}</span>
+          <button class="btn-danger-ghost" onclick="tempRoutineExercises.splice(${idx},1);renderBuilderList();">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function saveRoutineBuilder() {
+      const name = document.getElementById('builder-name').value.trim() || 'Custom Routine';
+      if (editingRoutineId) {
+        const idx = state.routines.findIndex(r => r.id === editingRoutineId);
+        if (idx !== -1) state.routines[idx] = { ...state.routines[idx], name, exercises: tempRoutineExercises };
+      } else {
+        state.routines.push({ id: 'r_' + Date.now(), name, exercises: tempRoutineExercises });
+      }
+      saveState(); renderRoutinesTab();
+    }
+
+    function deleteRoutine(id) {
+      if (!confirm(state.lang === 'it' ? 'Eliminare questa scheda?' : 'Delete this routine?')) return;
+      state.routines = state.routines.filter(r => r.id !== id);
+      saveState(); renderRoutinesTab();
+    }
+
+    let exSearchQuery = '', exCategoryFilter = 'all';
+    function renderExercisesTab() {
+      const container = document.getElementById('main-content');
+      const filtered = EXERCISES_DB.filter(e => {
+        const matchCat = exCategoryFilter === 'all' || e.category === exCategoryFilter;
+        const q = exSearchQuery.toLowerCase();
+        return matchCat && (e.name[state.lang].toLowerCase().includes(q) || MUSCLE_GROUPS[e.primary][state.lang].toLowerCase().includes(q));
+      });
+      container.innerHTML = `
+        <div class="card">
+          <input type="text" class="input-field" placeholder="${t('search_ex')}" value="${exSearchQuery}" oninput="exSearchQuery=this.value;renderExercisesListOnly()">
+          <div class="chip-bar" style="margin-top:10px">
+            ${['all', 'bodybuilding', 'bodyweight', 'calisthenics', 'mobility', 'stretching'].map(cat => `
+              <button class="chip ${exCategoryFilter === cat ? 'active' : ''}" onclick="exCategoryFilter='${cat}';renderExercisesTab()">${t('cat_' + cat)}</button>
+            `).join('')}
+          </div>
+        </div>
+        <div id="exercises-cards-container" class="grid-cards" style="margin-top:12px">${renderExerciseCardsHTML(filtered)}</div>
+      `;
+    }
+
+    function renderExercisesListOnly() {
+      const filtered = EXERCISES_DB.filter(e => {
+        const matchCat = exCategoryFilter === 'all' || e.category === exCategoryFilter;
+        const q = exSearchQuery.toLowerCase();
+        return matchCat && (e.name[state.lang].toLowerCase().includes(q) || MUSCLE_GROUPS[e.primary][state.lang].toLowerCase().includes(q));
+      });
+      document.getElementById('exercises-cards-container').innerHTML = renderExerciseCardsHTML(filtered);
+    }
+
+    function renderExerciseCardsHTML(list) {
+      return list.map(e => `
+        <div class="card">
+          <div class="ex-log-header">
+            <span class="badge-orange">${t('cat_' + e.category)}</span>
+            <span class="small muted">${MUSCLE_GROUPS[e.primary][state.lang]}</span>
+          </div>
+          <h3 style="margin:6px 0">${e.name[state.lang]}</h3>
+          <p class="small"><strong>${t('exec_label')}:</strong> ${e.exec[state.lang]}</p>
+          <p class="small alt-box"><strong>🔄 ${t('alt_label')}:</strong> ${e.alt[state.lang]}</p>
+        </div>
+      `).join('');
+    }
+
+    function showExerciseModal(id) {
+      const e = getExercise(id);
+      alert(`${e.name[state.lang]}\n\n${t('exec_label')}:\n${e.exec[state.lang]}\n\n${t('alt_label')}:\n${e.alt[state.lang]}`);
+    }
+
+    function renderAnalyticsTab() {
+      const container = document.getElementById('main-content');
+      const muscleStats = calculateMuscleStats(7);
+      const suggestion = getSuggestedNextWorkout();
+      const progData = getExerciseProgression(state.selectedChartEx);
+
+      const now = new Date();
+      const targetDate = new Date(now.getFullYear(), now.getMonth() + state.calendarMonthOffset, 1);
+      const year = targetDate.getFullYear(), month = targetDate.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthName = targetDate.toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { month: 'long', year: 'numeric' });
+
+      const trainedDays = new Map();
+      state.history.forEach(w => {
+        const d = new Date(w.date);
+        if (d.getFullYear() === year && d.getMonth() === month) trainedDays.set(d.getDate(), w.name);
+      });
+
+      let calendarCells = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = (d === now.getDate() && month === now.getMonth() && year === now.getFullYear());
+        const trainedName = trainedDays.get(d);
+        const isFutureSuggested = !trainedName && state.calendarMonthOffset === 0 && d > now.getDate() && ((d - now.getDate()) % 2 === 1);
+        calendarCells += `
+          <div class="cal-day ${trainedName ? 'cal-trained' : ''} ${isToday ? 'cal-today' : ''} ${isFutureSuggested ? 'cal-suggested' : ''}"
+               title="${trainedName || (isFutureSuggested ? (suggestion?.routine.name || 'Workout') : '')}">
+            <span>${d}</span>${trainedName ? '<small>●</small>' : (isFutureSuggested ? '<small>○</small>' : '')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="analytics-grid">
+          <div class="card">
+            <div class="ex-log-header">
+              <h3>📅 ${t('smart_calendar')}</h3>
+              <div class="row-gap">
+                <button class="btn-icon" onclick="state.calendarMonthOffset--;renderAnalyticsTab()">◀</button>
+                <span class="small" style="text-transform:capitalize">${monthName}</span>
+                <button class="btn-icon" onclick="state.calendarMonthOffset++;renderAnalyticsTab()">▶</button>
+              </div>
+            </div>
+            ${suggestion ? `<div class="suggestion-box" style="margin:10px 0">⚡ ${t('next_suggested')} <strong>${suggestion.routine.name}</strong> (${suggestion.readiness}%)</div>` : ''}
+            <div class="cal-grid">${calendarCells}</div>
+            <div class="small muted" style="margin-top:8px">● ${state.lang === 'it' ? 'Completato' : 'Completed'} &nbsp; ○ ${state.lang === 'it' ? 'Programmato (recupero ottimale)' : 'Scheduled'}</div>
+          </div>
+          <div class="card">
+            <h3>📈 ${t('progression_charts')}</h3>
+            <select class="input-field" style="margin:10px 0" onchange="state.selectedChartEx=this.value;renderAnalyticsTab()">
+              ${EXERCISES_DB.filter(e => e.category !== 'mobility' && e.category !== 'stretching').map(e => `
+                <option value="${e.id}" ${state.selectedChartEx === e.id ? 'selected' : ''}>${e.name[state.lang]}</option>
+              `).join('')}
+            </select>
+            ${renderSVGChart(progData)}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>🧬 ${t('muscle_volume')} (7d)</h3>
+          <div class="muscle-bars-grid">
+            ${Object.keys(MUSCLE_GROUPS).filter(m => m !== 'mobility').map(m => {
+              const st = muscleStats[m];
+              const recColor = st.recoveryPct >= 90 ? '#22c55e' : (st.recoveryPct >= 60 ? '#FF5500' : '#ef4444');
+              return `
+                <div class="muscle-stat-row">
+                  <div class="ex-log-header">
+                    <span><strong>${MUSCLE_GROUPS[m][state.lang]}</strong></span>
+                    <span class="small">${st.sets} ${t('series_unit')} • <span style="color:${recColor}">${st.recoveryPct}% rec.</span></span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, (st.sets / 16) * 100)}%; background: var(--orange)"></div></div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>🔄 Sync Xiaomi 15T Pro ↔ Pad 7 Pro</h3>
+          <div class="row-gap" style="margin-top:10px">
+            <button class="btn-outline" onclick="exportBackup()">${t('export_json')}</button>
+            <label class="btn-outline" style="cursor:pointer">${t('import_json')}<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSVGChart(points) {
+      if (!points.length) return `<p class="muted small" style="padding:20px 0">${state.lang === 'it' ? 'Registra almeno un allenamento con questo esercizio per visualizzare il grafico.' : 'Log at least one workout to view progression.'}</p>`;
+      const maxVal = Math.max(...points.map(p => p.oneRM), 10), w = 320, h = 140, pad = 20;
+      const coords = points.map((p, i) => `${points.length === 1 ? w / 2 : pad + (i / (points.length - 1)) * (w - pad * 2)},${h - pad - ((p.oneRM / maxVal) * (h - pad * 2))}`).join(' ');
+      return `
+        <svg viewBox="0 0 ${w} ${h}" class="chart-svg">
+          <polyline fill="none" stroke="#FF5500" stroke-width="3" points="${coords}" />
+          ${points.map((p, i) => {
+            const x = points.length === 1 ? w / 2 : pad + (i / (points.length - 1)) * (w - pad * 2);
+            const y = h - pad - ((p.oneRM / maxVal) * (h - pad * 2));
+            return `<circle cx="${x}" cy="${y}" r="4" fill="#fff" stroke="#FF5500" stroke-width="2" /><text x="${x}" y="${y - 8}" fill="#fff" font-size="10" text-anchor="middle">${p.oneRM}kg</text>`;
+          }).join('')}
+        </svg>
+        <div class="small muted">${t('est_1rm')} • ${state.lang === 'it' ? 'Ultimo Volume:' : 'Latest Vol:'} ${points[points.length - 1].volume} kg</div>
+      `;
+    }
+
+    function exportBackup() {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify({ routines: state.routines, history: state.history }, null, 2)], { type: 'application/json' }));
+      a.download = `apex-iron-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.routines) state.routines = parsed.routines;
+          if (parsed.history) state.history = parsed.history;
+          saveState(); alert(state.lang === 'it' ? 'Backup importato!' : 'Backup imported!'); renderAnalyticsTab();
+        } catch (err) { alert('File non valido'); }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderCoachTab() {
+      const container = document.getElementById('main-content');
+      container.innerHTML = `
+        <div class="card">
+          <h2>🤖 ${t('coach_title')}</h2>
+          <p class="muted small">${t('coach_subtitle')}</p>
+          <div class="row-gap" style="margin-top:10px">
+            <input type="password" id="gemini-key-input" class="input-field" placeholder="AIzaSy... (Gemini API Key opzionale)" value="${state.geminiKey}">
+            <button class="btn-outline" onclick="state.geminiKey=document.getElementById('gemini-key-input').value.trim();saveState();alert('Key salvata!')">${t('save_key')}</button>
+          </div>
+          <div class="chip-bar" style="margin-top:12px">
+            <button class="chip" onclick="askCoach('${state.lang === 'it' ? 'Analizza il mio volume settimanale e i muscoli più affaticati' : 'Analyze my weekly volume'}')">📊 ${state.lang === 'it' ? 'Analisi Volume' : 'Volume Check'}</button>
+            <button class="chip" onclick="askCoach('${state.lang === 'it' ? 'Come supero uno stallo di carico su panca o squat?' : 'How do I break a plateau?'}')">🚀 ${state.lang === 'it' ? 'Superare Stalli' : 'Break Plateaus'}</button>
+            <button class="chip" onclick="askCoach('${state.lang === 'it' ? 'Quando dovrei fare una settimana di scarico (deload)?' : 'When should I take a deload?'}')">🔋 Deload</button>
+          </div>
+        </div>
+        <div class="card chat-box">
+          ${state.chatMessages.length === 0 ? `<div class="muted small">${state.lang === 'it' ? 'Fai una domanda sui tuoi allenamenti o tocca un pulsante rapido.' : 'Ask about your workouts or tap a quick prompt.'}</div>` : ''}
+          ${state.chatMessages.map(m => `<div class="chat-msg ${m.role === 'user' ? 'msg-user' : 'msg-ai'}">${m.text.replace(/\n/g, '<br>')}</div>`).join('')}
+        </div>
+        <div class="row-gap" style="margin-top:10px">
+          <input type="text" id="coach-input" class="input-field" placeholder="${t('coach_placeholder')}" onkeydown="if(event.key==='Enter') askCoach()">
+          <button class="btn-primary" onclick="askCoach()">${t('send')}</button>
+        </div>
+      `;
+    }
+
+    async function askCoach(presetPrompt = null) {
+      const input = document.getElementById('coach-input');
+      const question = presetPrompt || (input ? input.value.trim() : '');
+      if (!question) return;
+      if (input) input.value = '';
+      state.chatMessages.push({ role: 'user', text: question });
+      renderCoachTab();
+
+      const muscleStats = calculateMuscleStats(7);
+      const summaryContext = Object.keys(muscleStats).filter(m => muscleStats[m].sets > 0)
+        .map(m => `${MUSCLE_GROUPS[m][state.lang]}: ${muscleStats[m].sets} serie (${muscleStats[m].recoveryPct}% rec)`).join(', ');
+
+      let reply = '';
+      if (state.geminiKey) {
+        try {
+          const prompt = `Sei un coach esperto di bodybuilding, calisthenics e fisiologia. Rispondi in ${state.lang === 'it' ? 'italiano' : 'inglese'} in modo concreto.\nDati atleta ultimi 7gg: ${state.history.length} allenamenti totali. Volume attivo: ${summaryContext || 'nessuno'}.\nDomanda: ${question}`;
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.geminiKey}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const data = await res.json();
+          reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Errore API.';
+        } catch (e) { reply = 'Errore di connessione alle API Gemini.'; }
+      } else {
+        reply = state.lang === 'it'
+          ? `📊 Analisi Locale (inserisci una Gemini API Key gratuita sopra per AI completa):\n• Allenamenti registrati: ${state.history.length}\n• Volume 7gg: ${summaryContext || '0 serie registrate'}\n• Consiglio: Mantieni 10-18 serie allenanti settimanali per gruppo grande con RIR 1-2 e usa la doppia progressione.`
+          : `📊 Local Analysis (add free Gemini API Key above for full AI):\n• Workouts logged: ${state.history.length}\n• 7d Volume: ${summaryContext || '0 sets'}\n• Tip: Aim for 10-18 hard sets/week per major muscle at 1-2 RIR.`;
+      }
+      state.chatMessages.push({ role: 'ai', text: reply });
+      renderCoachTab();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateStaticLabels();
+      updateTimerUI();
+      renderCurrentView();
+    });
+  </script>
+</body>
+</html>
