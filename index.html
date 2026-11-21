@@ -953,7 +953,7 @@
         try {
           const prompt = `Sei un coach esperto di bodybuilding, calisthenics e fisiologia. Rispondi in ${state.lang === 'it' ? 'italiano' : 'inglese'} in modo concreto e sintetico.\nDati atleta ultimi 7gg: ${state.history.length} allenamenti totali. Volume attivo: ${summaryContext || 'nessuno'}.\nDomanda: ${question}`;
           
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
