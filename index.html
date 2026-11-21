@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0A0A0C">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>APEX IRON — Pro Gym & Calisthenics Tracker</title>
+  <title>APEX IRON v3.0 — Pro Gym & Calisthenics Tracker</title>
   <link id="pwa-manifest" rel="manifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
@@ -31,17 +31,17 @@
       position: sticky; top: 0; z-index: 50;
       background: rgba(10, 10, 12, 0.92); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border); padding: 10px 16px;
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
-    .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .brand { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; }
     .brand span { color: var(--orange); }
     .timer-pill {
       background: var(--surface-2); border: 1px solid var(--border); border-radius: 99px;
-      padding: 4px 10px; display: flex; align-items: center; gap: 8px; position: relative; overflow: hidden;
+      padding: 4px 10px; display: flex; align-items: center; gap: 6px; position: relative; overflow: hidden;
     }
     .timer-progress-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--orange); transition: width 0.3s linear; }
-    #timer-display { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1rem; color: var(--orange); cursor: pointer; padding: 2px 4px; }
-    .timer-btn { background: transparent; border: none; color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+    #timer-display { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.98rem; color: var(--orange); cursor: pointer; padding: 2px 4px; }
+    .timer-btn { background: transparent; border: none; color: var(--text); font-weight: 700; font-size: 0.78rem; cursor: pointer; padding: 4px 5px; border-radius: 6px; }
     .timer-btn:active { background: var(--orange-glow); color: var(--orange); }
 
     /* MAIN CONTAINER */
@@ -139,7 +139,7 @@
 </head>
 <body>
 
-  <!-- TOP BAR CON TIMER RECUPERO 03:00 -->
+  <!-- TOP BAR CON TIMER RECUPERO 03:00 & STATO SYNC -->
   <header class="top-bar">
     <div class="brand">APEX<span>IRON</span></div>
     <div class="timer-pill">
@@ -149,13 +149,16 @@
       <button class="timer-btn" id="timer-toggle-btn" onclick="toggleTimer()">▶</button>
       <div class="timer-progress-bar" id="timer-progress" style="width:100%"></div>
     </div>
-    <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
+    <div class="row-gap">
+      <button class="btn-icon small" id="sync-status-btn" onclick="switchTab('analytics')" title="Cloud Sync">☁️</button>
+      <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
+    </div>
   </header>
 
   <!-- CONTENUTO PRINCIPALE DINAMICO -->
   <main id="main-content"></main>
 
-  <!-- NAVIGAZIONE ADATTIVA (BOTTOM SU 15T PRO, SIDEBAR SU PAD 7 PRO) -->
+  <!-- NAVIGAZIONE ADATTIVA -->
   <nav class="nav-bar">
     <button class="nav-btn active" data-tab="workout" onclick="switchTab('workout')">
       <span class="nav-icon">🏋️</span><span data-i18n="nav_workout">Workout</span>
@@ -175,7 +178,7 @@
   </nav>
 
   <script>
-    // ================= MANIFEST PWA DINAMICO (SINGLE-FILE) =================
+    // ================= MANIFEST PWA DINAMICO =================
     (function setupManifest() {
       const manifest = {
         name: "APEX IRON — Pro Gym & Calisthenics Tracker",
@@ -214,7 +217,6 @@
     };
 
     const EXERCISES_DB = [
-      // PETTO
       { id: "bench_press_barbell", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front", "triceps"], name: { it: "Panca Piana con Bilanciere", en: "Barbell Bench Press" }, exec: { it: "Scapole addotte e depresse, arco toracico naturale, piedi piantati a terra. Scendi controllato fino allo sterno con gomiti a ~45°, poi spingi esplosivo senza staccare i glutei.", en: "Retract and depress scapulae, natural arch, feet planted. Lower bar to mid-sternum with elbows at ~45°, press explosively keeping glutes down." }, alt: { it: "Panca piana con manubri, Chest Press alla macchina, oppure Piegamenti zavorrati.", en: "Dumbbell Bench Press, Machine Chest Press, or Weighted Push-ups." } },
       { id: "incline_db_press", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front", "triceps"], name: { it: "Spinte su Panca Inclinata (Manubri)", en: "Incline Dumbbell Press" }, exec: { it: "Panca a 30°-45°. Porta i manubri verso la parte alta del petto allargando leggermente i gomiti senza iperestendere le spalle in basso. Spingi convergendo in alto.", en: "Bench at 30°-45°. Lower dumbbells toward upper chest without overstretching shoulders at the bottom. Press up converging slightly." }, alt: { it: "Panca inclinata al Multipower/Bilanciere, Incline Chest Press, o Piegamenti declinati.", en: "Incline Barbell Press, Incline Machine Press, or Decline Push-ups." } },
       { id: "cable_fly", category: "bodybuilding", primary: "chest", secondary: ["shoulders_front"], name: { it: "Croci ai Cavi (Cable Fly)", en: "Cable Chest Fly" }, exec: { it: "Un passo avanti per stabilità, gomiti leggermente flessi e bloccati. Apri le braccia fino a un buon allungamento del petto, poi chiudi portando i polsi a toccarsi.", en: "Step forward for stability, keep a slight fixed bend in elbows. Open arms for a deep chest stretch, then bring wrists together." }, alt: { it: "Pec Deck Machine, Croci con manubri su panca, o Croci agli anelli / TRX.", en: "Pec Deck Machine, Dumbbell Flyes, or Ring / TRX Chest Flyes." } },
@@ -222,7 +224,6 @@
       { id: "dips_chest", category: "calisthenics", primary: "chest", secondary: ["triceps", "shoulders_front"], name: { it: "Dip alle Parallele (Focus Petto)", en: "Chest Dips" }, exec: { it: "Inclina il busto avanti di 20-30° e lascia aprire leggermente i gomiti. Scendi fino a portare la spalla poco sotto il gomito e risali spingendo forte.", en: "Lean torso forward 20-30° and flare elbows slightly. Descend until shoulders dip below elbows, press up." }, alt: { it: "Dip tra due panche, Panca declinata con manubri o Piegamenti profondi su parallettes.", en: "Bench Dips, Decline Dumbbell Press, or Deep Parallettes Push-ups." } },
       { id: "pushups_standard", category: "bodyweight", primary: "chest", secondary: ["triceps", "shoulders_front", "abs"], name: { it: "Piegamenti a Terra (Push-Up)", en: "Push-Ups" }, exec: { it: "Corpo in linea rigida (addome e glutei contratti). Mani poco più larghe delle spalle, gomiti a 45°. Scendi sfiorando il pavimento col petto e risali.", en: "Rigid plank line. Hands slightly wider than shoulders, elbows at 45°. Touch chest lightly to floor and press up." }, alt: { it: "Piegamenti su rialzo (più facili) o Piegamenti archer / con zaino zavorrato (più difficili).", en: "Incline Push-ups (easier) or Archer / Weighted Backpack Push-ups (harder)." } },
       { id: "ring_pushups", category: "calisthenics", primary: "chest", secondary: ["shoulders_front", "triceps", "abs"], name: { it: "Piegamenti agli Anelli (RTO)", en: "Ring Push-Ups" }, exec: { it: "Anelli bassi. Scendi mantenendo gli anelli vicini al petto; in cima distendi le braccia e ruota i palmi in avanti (RTO) per massima contrazione.", en: "Low rings. Lower keeping rings close to chest; at top lock out and turn palms forward (RTO)." }, alt: { it: "Piegamenti al TRX o Piegamenti su manubri esagonali instabili.", en: "TRX Push-ups or Push-ups on hex dumbbells." } },
-      // SCHIENA
       { id: "pullups_pronated", category: "calisthenics", primary: "back_lats", secondary: ["biceps", "back_upper", "forearms"], name: { it: "Trazioni alla Sbarra (Presa Prona)", en: "Pull-Ups (Overhand)" }, exec: { it: "Presa poco più larga delle spalle. Attiva prima le scapole abbassandole, poi tira portando lo sterno verso la sbarra senza slanci.", en: "Grip slightly wider than shoulders. Depress scapulae first, pull sternum toward bar without kipping." }, alt: { it: "Lat Machine avanti, Trazioni assistite con elastico, oppure Australian Pull-Up.", en: "Lat Pulldown, Band-Assisted Pull-ups, or Inverted Rows." } },
       { id: "chinups_supinated", category: "calisthenics", primary: "back_lats", secondary: ["biceps", "forearms"], name: { it: "Trazioni Presa Supina (Chin-Up)", en: "Chin-Ups (Underhand)" }, exec: { it: "Palmi rivolti verso di te a larghezza spalle. Tira i gomiti verso i fianchi fino a portare il mento sopra la sbarra, scendi controllato.", en: "Palms facing you at shoulder width. Drive elbows down until chin clears bar, lower with control." }, alt: { it: "Lat Machine presa inversa stretta o Rematore inverso presa supina.", en: "Underhand Close-Grip Lat Pulldown or Supinated Inverted Rows." } },
       { id: "lat_pulldown", category: "bodybuilding", primary: "back_lats", secondary: ["biceps", "back_upper"], name: { it: "Lat Machine Avanti", en: "Lat Pulldown" }, exec: { it: "Blocca le cosce sotto i cuscinetti, inclina leggermente il busto indietro (10-15°). Tira la sbarra verso la parte alta del petto.", en: "Lock thighs under pads, lean back 10-15°. Pull bar to upper chest driving elbows down." }, alt: { it: "Trazioni alla sbarra o Pullover ai cavi / con manubrio.", en: "Pull-ups or Cable / Dumbbell Pullovers." } },
@@ -231,7 +232,6 @@
       { id: "single_arm_db_row", category: "bodybuilding", primary: "back_lats", secondary: ["back_upper", "biceps", "forearms"], name: { it: "Rematore con Manubrio (Unilaterale)", en: "Single-Arm Dumbbell Row" }, exec: { it: "Mano e ginocchio su panca. Tira il manubrio verso l'anca (non verso la spalla) per attivare al massimo il gran dorsale.", en: "Hand and knee on bench. Pull dumbbell toward hip (not shoulder) to maximize lat engagement." }, alt: { it: "Rematore singolo al cavo basso, con kettlebell o con zaino carico.", en: "Single-Arm Low Cable Row, Kettlebell Row, or Loaded Backpack Row." } },
       { id: "australian_pullup", category: "bodyweight", primary: "back_upper", secondary: ["back_lats", "biceps", "shoulders_rear"], name: { it: "Australian Pull-Up (Rematore Inverso)", en: "Australian Pull-Ups (Inverted Row)" }, exec: { it: "Sotto una sbarra bassa o anelli, corpo teso con talloni a terra. Tira il petto verso la sbarra mantenendo glutei e addome attivi.", en: "Under a low bar or rings, body straight. Pull chest to bar keeping glutes and core engaged." }, alt: { it: "Rematore al TRX o sotto un tavolo solido.", en: "TRX Rows or Rows under a sturdy table." } },
       { id: "front_lever_tuck", category: "calisthenics", primary: "back_lats", secondary: ["abs", "back_upper", "shoulders_rear"], name: { it: "Front Lever (Tuck / Advanced)", en: "Front Lever Hold" }, exec: { it: "Appeso alla sbarra a braccia tese, premi forte verso il basso con i dorsali portando il bacino all'altezza delle spalle.", en: "Hanging with straight arms, push down hard through lats bringing hips level with shoulders." }, alt: { it: "Pullover a braccia tese al cavo alto o Dragon Flag negative.", en: "Straight-Arm Cable Pulldowns or Negative Dragon Flags." } },
-      // SPALLE
       { id: "overhead_press_barbell", category: "bodybuilding", primary: "shoulders_front", secondary: ["triceps", "shoulders_side", "abs"], name: { it: "Military Press (Lento Avanti Bilanciere)", en: "Barbell Overhead Press" }, exec: { it: "In piedi, glutei e addome contratti. Spingi il bilanciere dalla clavicola sopra la testa incastrando le spalle in cima.", en: "Standing, glutes and abs braced. Press bar from collarbone overhead, locking out at top." }, alt: { it: "Lento avanti manubri da seduto, Shoulder Press machine o Pike Push-Up.", en: "Seated Dumbbell Press, Shoulder Press Machine, or Pike Push-ups." } },
       { id: "db_shoulder_press", category: "bodybuilding", primary: "shoulders_front", secondary: ["triceps", "shoulders_side"], name: { it: "Spinte in Alto con Manubri", en: "Dumbbell Shoulder Press" }, exec: { it: "Panca a 75°-85°. Tieni i gomiti leggermente avanti rispetto al piano delle spalle e spingi verso l'alto.", en: "Bench at 75°-85°. Keep elbows slightly forward in scapular plane and press up." }, alt: { it: "Shoulder Press alla macchina, Spinte kettlebell o Pike Push-Up su rialzo.", en: "Machine Shoulder Press, Kettlebell Press, or Elevated Pike Push-ups." } },
       { id: "lateral_raise_db", category: "bodybuilding", primary: "shoulders_side", secondary: ["back_upper"], name: { it: "Alzate Laterali con Manubri", en: "Dumbbell Lateral Raises" }, exec: { it: "Busto leggermente flesso avanti, gomiti semi-tesi. Solleva i manubri verso l'esterno guidando con i gomiti fino all'altezza spalle.", en: "Slight forward lean, soft elbows. Raise dumbbells outward leading with elbows to shoulder height." }, alt: { it: "Alzate laterali ai cavi bassi, Lateral Raise Machine o con banda elastica.", en: "Cable Lateral Raises, Lateral Raise Machine, or Band Lateral Raises." } },
@@ -240,7 +240,6 @@
       { id: "reverse_pec_deck", category: "bodybuilding", primary: "shoulders_rear", secondary: ["back_upper"], name: { it: "Alzate Posteriori alla Macchina", en: "Reverse Pec Deck Fly" }, exec: { it: "Petto appoggiato allo schienale, spalle basse. Spingi le braccia indietro aprendo ad arco finché allineate al busto.", en: "Chest against pad, shoulders depressed. Sweep arms back until aligned with torso." }, alt: { it: "Croci inverse ai cavi incrociati o Alzate posteriori con manubri.", en: "Cross-Cable Rear Delt Flyes or Bent-Over Rear Delt Raises." } },
       { id: "pike_pushup", category: "calisthenics", primary: "shoulders_front", secondary: ["triceps", "shoulders_side"], name: { it: "Pike Push-Up (Piegamenti a V)", en: "Pike Push-Ups" }, exec: { it: "Corpo a V rovesciata (bacino alto). Scendi portando la testa avanti rispetto alle mani e risali spingendo.", en: "Inverted V body position. Lower head forward ahead of hands and press back up." }, alt: { it: "Handstand Push-Up al muro o Pike Push-Up su panca.", en: "Wall Handstand Push-Ups or Bench Pike Push-Ups." } },
       { id: "handstand_hold", category: "calisthenics", primary: "shoulders_front", secondary: ["triceps", "abs", "shoulders_side"], name: { it: "Verticale al Muro / Libera (Handstand)", en: "Wall / Freestanding Handstand" }, exec: { it: "Mani larghezza spalle, dita ben aperte. Spingi attivamente con le spalle verso l'alto e tieni l'addome chiuso.", en: "Hands shoulder-width, fingers splayed. Actively push tall through shoulders and keep ribs tucked." }, alt: { it: "Pike Hold con piedi su box/panca.", en: "Box/Bench Pike Hold." } },
-      // GAMBE
       { id: "barbell_squat", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings", "abs"], name: { it: "Squat con Bilanciere (Back Squat)", en: "Barbell Back Squat" }, exec: { it: "Bilanciere sui trapezi, piedi larghezza spalle. Scendi rompendo il parallelo con ginocchia in linea con le punte, risali spingendo.", en: "Bar on traps, feet shoulder-width. Descend below parallel tracking knees over toes, drive up." }, alt: { it: "Hack Squat, Leg Press 45°, Goblet Squat o Squat bulgaro.", en: "Hack Squat, 45° Leg Press, Goblet Squat, or Bulgarian Split Squat." } },
       { id: "leg_press", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings"], name: { it: "Leg Press 45°", en: "45° Leg Press" }, exec: { it: "Piedi a metà pedana larghezza spalle. Scendi al massimo senza sollevare la zona lombare dallo schienale, spingi senza iperestendere.", en: "Feet mid-sled. Lower deep without lifting lower back off pad, press without locking knees." }, alt: { it: "Hack Squat, Goblet Squat o Affondi camminati.", en: "Hack Squat, Goblet Squat, or Walking Lunges." } },
       { id: "bulgarian_split_squat", category: "bodybuilding", primary: "quads", secondary: ["glutes", "hamstrings"], name: { it: "Squat Bulgaro (Bulgarian Split Squat)", en: "Bulgarian Split Squat" }, exec: { it: "Collo del piede posteriore su panca. Scendi verticalmente con il ginocchio anteriore che avanza oltre la punta.", en: "Rear foot on bench. Drop straight down letting front knee travel over toes." }, alt: { it: "Affondi statici, Step-Up su box alto o Pistol Squat assistito.", en: "Static Lunges, High Box Step-Ups, or Assisted Pistol Squats." } },
@@ -250,20 +249,17 @@
       { id: "hip_thrust", category: "bodybuilding", primary: "glutes", secondary: ["hamstrings", "quads"], name: { it: "Hip Thrust con Bilanciere", en: "Barbell Hip Thrust" }, exec: { it: "Scapole sul bordo panca, tibie verticali in cima. Spingi sui talloni portando il bacino in retroversione con 1s di contrazione.", en: "Upper back on bench edge, shins vertical at lockout. Drive through heels with 1s squeeze." }, alt: { it: "Glute Bridge a terra (zavorrato o monopodalico).", en: "Floor Glute Bridge (weighted or single-leg)." } },
       { id: "pistol_squat", category: "calisthenics", primary: "quads", secondary: ["glutes", "calves", "abs"], name: { it: "Pistol Squat (Squat su una gamba)", en: "Pistol Squat" }, exec: { it: "In equilibrio su una gamba, l'altra tesa avanti. Scendi in accosciata completa col tallone a terra e risali.", en: "Balance on one leg, other extended forward. Squat all the way down keeping heel planted." }, alt: { it: "Pistol Squat su box, Shrimp Squat o Squat bulgaro a corpo libero.", en: "Box Pistol Squat, Shrimp Squat, or Bodyweight Bulgarian Split Squat." } },
       { id: "standing_calf_raise", category: "bodybuilding", primary: "calves", secondary: [], name: { it: "Calf Raise in Piedi", en: "Standing Calf Raise" }, exec: { it: "Avampiedi su rialzo. Scendi 2s in allungamento, pausa di 1s in basso per eliminare il rimbalzo, poi sali sulle punte.", en: "Balls of feet on step. Lower heels 2s, pause 1s at bottom, then press up onto toes." }, alt: { it: "Calf singolo su gradino con manubrio o Calf alla Leg Press.", en: "Single-Leg Step Calf Raise or Leg Press Calf Raise." } },
-      // BRACCIA
       { id: "barbell_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Curl con Bilanciere / EZ", en: "Barbell / EZ-Bar Curl" }, exec: { it: "Gomiti fermi lungo i fianchi. Fletti l'avambraccio verso le spalle senza dondolare con la schiena, scendi controllato.", en: "Elbows pinned to sides. Curl bar toward shoulders without swinging torso." }, alt: { it: "Curl alternato manubri, Curl al cavo basso o Pelican Curl agli anelli.", en: "Alternating Dumbbell Curls, Low Cable Curls, or Ring Pelican Curls." } },
       { id: "incline_db_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Curl su Panca Inclinata (Manubri)", en: "Incline Dumbbell Curl" }, exec: { it: "Panca a 45°-60°, braccia perpendicolari dietro il busto. Esegui il curl mantenendo i gomiti puntati verso il basso.", en: "Bench at 45°-60°, arms hanging behind torso. Curl keeping elbows pointed down." }, alt: { it: "Bayesian Curl al cavo basso (di spalle al cavo).", en: "Behind-the-Back Bayesian Cable Curl." } },
       { id: "hammer_curl", category: "bodybuilding", primary: "biceps", secondary: ["forearms"], name: { it: "Hammer Curl (Presa a Martello)", en: "Dumbbell Hammer Curl" }, exec: { it: "Palmi rivolti l'uno verso l'altro (presa neutra). Solleva i manubri con polsi dritti per colpire bicipite e brachioradiale.", en: "Neutral grip. Curl dumbbells keeping wrists straight to target biceps and brachioradialis." }, alt: { it: "Hammer Curl ai cavi con corda o Curl con elastico presa neutra.", en: "Rope Cable Hammer Curls or Neutral-Grip Band Curls." } },
       { id: "tricep_pushdown", category: "bodybuilding", primary: "triceps", secondary: [], name: { it: "Pushdown ai Cavi (Corda / Barra)", en: "Cable Tricep Pushdown" }, exec: { it: "Gomiti bloccati ai fianchi. Estendi completamente l'avambraccio verso il basso aprendo leggermente la corda in fondo.", en: "Elbows locked at sides. Extend forearms fully downward, flaring rope at bottom." }, alt: { it: "French Press con manubri, Kickback o Estensioni tricipiti con elastico.", en: "Dumbbell Skullcrushers, Kickbacks, or Band Tricep Pushdowns." } },
       { id: "overhead_tricep_ext", category: "bodybuilding", primary: "triceps", secondary: [], name: { it: "French Press / Estensioni Sopra la Testa", en: "Overhead Tricep Extension" }, exec: { it: "Con cavo basso, bilanciere EZ o manubrio dietro la testa. Lascia scendere l'avambraccio per massimo allungamento, poi estendi.", en: "Using low cable, EZ-bar, or dumbbell behind head. Let forearms drop for stretch, extend overhead." }, alt: { it: "Bodyweight Tricep Extension sotto sbarra bassa o contro panca.", en: "Bodyweight Tricep Extensions." } },
       { id: "close_grip_bench", category: "bodybuilding", primary: "triceps", secondary: ["chest", "shoulders_front"], name: { it: "Panca Presa Stretta / Diamond Push-Up", en: "Close-Grip Bench / Diamond Push-Up" }, exec: { it: "Mani a larghezza spalle (o a diamante a terra), gomiti vicini al busto durante discesa e spinta.", en: "Hands shoulder-width (or diamond on floor), keep elbows tucked close to ribs." }, alt: { it: "Dip alle parallele con busto eretto.", en: "Upright Tricep Dips." } },
-      // CORE & SKILLS
       { id: "hanging_leg_raise", category: "calisthenics", primary: "abs", secondary: ["forearms"], name: { it: "Hanging Leg Raise alla Sbarra", en: "Hanging Leg Raises" }, exec: { it: "Appeso alla sbarra, solleva le gambe tese (o ginocchia) arrotolando il bacino verso l'alto (retroversione).", en: "Hanging from bar, raise straight legs by curling pelvis upward (posterior tilt)." }, alt: { it: "Reverse Crunch su panca o Leg Raise a terra.", en: "Bench Reverse Crunches or Floor Leg Raises." } },
       { id: "cable_crunch", category: "bodybuilding", primary: "abs", secondary: [], name: { it: "Crunch al Cavo Alto", en: "Kneeling Cable Crunch" }, exec: { it: "In ginocchio con corda ai lati della testa. Arrotola la colonna portando i gomiti verso le cosce tenendo fermo il bacino.", en: "Kneeling with rope beside head. Curl spine bringing elbows toward thighs." }, alt: { it: "Crunch con disco zavorrato o Ab Wheel Rollout.", en: "Weighted Plate Crunches or Ab Wheel Rollouts." } },
       { id: "ab_wheel_rollout", category: "calisthenics", primary: "abs", secondary: ["back_lats", "shoulders_front"], name: { it: "Ab Wheel Rollout / Plank Walkout", en: "Ab Wheel Rollout" }, exec: { it: "Parti in retroversione del bacino. Scivola avanti mantenendo l'addome teso senza far crollare la lombare, poi richiudi.", en: "Start with posterior pelvic tilt. Roll forward bracing core without sagging lower back." }, alt: { it: "Ring Fallout o Walkout sulle mani da posizione plank.", en: "Ring Fallouts or Hand Walkouts." } },
       { id: "lsit_hold", category: "calisthenics", primary: "abs", secondary: ["triceps", "quads", "shoulders_front"], name: { it: "L-Sit (Parallele o a Terra)", en: "L-Sit Hold" }, exec: { it: "Spingi forte le spalle verso il basso deprimendo le scapole e solleva le gambe tese parallele al pavimento.", en: "Depress shoulders hard and hold straight legs parallel to ground." }, alt: { it: "Tuck L-Sit (ginocchia raccolte) o L-Sit su manubri.", en: "Tuck L-Sit or L-Sit on dumbbells." } },
       { id: "muscle_up_bar", category: "calisthenics", primary: "back_lats", secondary: ["chest", "triceps", "biceps", "abs"], name: { it: "Muscle-Up alla Sbarra / Anelli", en: "Bar / Ring Muscle-Up" }, exec: { it: "Trazione esplosiva portando il petto sopra la sbarra, transizione rapida dei polsi sopra la sbarra e spinta finale in dip.", en: "Explosive pull bringing chest above bar, fast wrist transition, finish with straight bar dip." }, alt: { it: "High Pull-Up esplosivi + Dip profondi su sbarra dritta.", en: "Explosive High Pull-Ups + Deep Straight-Bar Dips." } },
-      // MOBILITÀ & STRETCHING
       { id: "worlds_greatest_stretch", category: "mobility", primary: "mobility", secondary: ["hamstrings", "glutes", "chest"], name: { it: "World's Greatest Stretch", en: "World's Greatest Stretch" }, exec: { it: "Affondo lungo avanti, porta il gomito interno verso la caviglia per aprire l'anca, poi ruota il torace aprendo il braccio in alto. 5 rip/lato.", en: "Deep lunge, drop inside elbow toward ankle, then rotate thoracic spine reaching arm to ceiling. 5 reps/side." }, alt: { it: "Affondo con torsione toracica in piedi.", en: "Standing Lunge with Thoracic Twist." } },
       { id: "thoracic_extension_foam", category: "mobility", primary: "mobility", secondary: ["back_upper", "chest"], name: { it: "Estensione Toracica & Shoulder Dislocates", en: "Thoracic Extension & Dislocates" }, exec: { it: "Con bastone o elastico ampio, porta le braccia tese da davanti fin dietro la schiena senza inarcare la lombare.", en: "With dowel or wide band, pass straight arms from front to behind back without arching lower back." }, alt: { it: "Cat-Cow (Gatto-Mucca) a terra + Thread the Needle.", en: "Floor Cat-Cow + Thread the Needle." } },
       { id: "90_90_hip_switches", category: "mobility", primary: "mobility", secondary: ["glutes"], name: { it: "90/90 Hip Switches (Mobilità Anche)", en: "90/90 Hip Switches" }, exec: { it: "Seduto a terra con entrambe le ginocchia a 90°. Ruota le ginocchia da un lato all'altro mantenendo il busto alto.", en: "Seated on floor with both knees at 90°. Rotate knees side-to-side keeping torso tall." }, alt: { it: "Pigeon Pose dinamica.", en: "Dynamic Pigeon Pose." } },
@@ -291,7 +287,7 @@
         coach_subtitle: "Analisi basata sui tuoi dati reali di volume, RIR e recupero",
         save_key: "Salva Key", coach_placeholder: "Chiedi consigli su stalli, volume, tecnica o programmazione...",
         send: "Invia", export_json: "Esporta Backup JSON", import_json: "Importa Backup JSON",
-        workout_saved: "Allenamento salvato nello storico!", series_unit: "serie eff."
+        workout_saved: "Allenamento salvato e sincronizzato!", series_unit: "serie eff."
       },
       en: {
         nav_workout: "Workout", nav_routines: "Routines", nav_exercises: "Exercises", nav_analytics: "Analytics & Cal", nav_coach: "AI Coach",
@@ -310,7 +306,7 @@
         coach_subtitle: "Insights powered by your real volume, RIR & recovery logs",
         save_key: "Save Key", coach_placeholder: "Ask about plateaus, volume, form, or programming...",
         send: "Send", export_json: "Export JSON Backup", import_json: "Import JSON Backup",
-        workout_saved: "Workout saved to history!", series_unit: "eff. sets"
+        workout_saved: "Workout saved & synced!", series_unit: "eff. sets"
       }
     };
 
@@ -327,6 +323,9 @@
       history: JSON.parse(localStorage.getItem('apex_history')) || [],
       activeWorkout: JSON.parse(localStorage.getItem('apex_active_workout')) || null,
       geminiKey: localStorage.getItem('apex_gemini_key') || '',
+      fbUrl: localStorage.getItem('apex_fb_url') || '',
+      fbPin: localStorage.getItem('apex_fb_pin') || '',
+      lastUpdated: parseInt(localStorage.getItem('apex_last_updated')) || 0,
       timer: { defaultSeconds: 180, remaining: 180, running: false, interval: null },
       currentTab: 'workout',
       selectedChartEx: 'bench_press_barbell',
@@ -334,12 +333,109 @@
       chatMessages: []
     };
 
-    function saveState() {
+    // ================= MOTORE CLOUD SYNC (FIREBASE REALTIME REST + SSE) =================
+    let syncEventSource = null;
+
+    function updateSyncIcon(status) {
+      const btn = document.getElementById('sync-status-btn');
+      if (!btn) return;
+      if (status === 'synced') btn.textContent = '☁️✅';
+      else if (status === 'syncing') btn.textContent = '☁️🔄';
+      else if (status === 'error') btn.textContent = '☁️⚠️';
+      else btn.textContent = '☁️';
+    }
+
+    function getCleanFirebaseEndpoint() {
+      const url = (state.fbUrl || '').trim().replace(/\/+$/, '');
+      const pin = (state.fbPin || '').trim().replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!url || !pin) return null;
+      return `${url}/${pin}.json`;
+    }
+
+    async function pushToCloud() {
+      const endpoint = getCleanFirebaseEndpoint();
+      if (!endpoint) return;
+      updateSyncIcon('syncing');
+      try {
+        const payload = {
+          routines: state.routines,
+          history: state.history,
+          activeWorkout: state.activeWorkout,
+          lastUpdated: state.lastUpdated
+        };
+        const res = await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        updateSyncIcon(res.ok ? 'synced' : 'error');
+      } catch (e) {
+        updateSyncIcon('error');
+      }
+    }
+
+    async function pullFromCloud(forceOverwrite = false) {
+      const endpoint = getCleanFirebaseEndpoint();
+      if (!endpoint) return;
+      updateSyncIcon('syncing');
+      try {
+        const res = await fetch(endpoint);
+        if (!res.ok) { updateSyncIcon('error'); return; }
+        const remote = await res.json();
+        if (remote && (forceOverwrite || (remote.lastUpdated && remote.lastUpdated > state.lastUpdated))) {
+          if (remote.routines) state.routines = remote.routines;
+          if (remote.history) state.history = remote.history;
+          if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
+          state.lastUpdated = remote.lastUpdated || Date.now();
+          persistLocalOnly();
+          renderCurrentView();
+        } else if (!remote && state.history.length > 0) {
+          await pushToCloud();
+        }
+        updateSyncIcon('synced');
+      } catch (e) {
+        updateSyncIcon('error');
+      }
+    }
+
+    function startRealtimeSyncListener() {
+      if (syncEventSource) { syncEventSource.close(); syncEventSource = null; }
+      const endpoint = getCleanFirebaseEndpoint();
+      if (!endpoint) { updateSyncIcon('idle'); return; }
+      pullFromCloud();
+      try {
+        syncEventSource = new EventSource(endpoint);
+        syncEventSource.addEventListener('put', (e) => {
+          const msg = JSON.parse(e.data);
+          const remote = msg.data;
+          if (remote && remote.lastUpdated && remote.lastUpdated > state.lastUpdated) {
+            if (remote.routines) state.routines = remote.routines;
+            if (remote.history) state.history = remote.history;
+            if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
+            state.lastUpdated = remote.lastUpdated;
+            persistLocalOnly();
+            renderCurrentView();
+            updateSyncIcon('synced');
+          }
+        });
+      } catch (e) {}
+    }
+
+    function persistLocalOnly() {
       localStorage.setItem('apex_lang', state.lang);
       localStorage.setItem('apex_routines', JSON.stringify(state.routines));
       localStorage.setItem('apex_history', JSON.stringify(state.history));
       localStorage.setItem('apex_active_workout', JSON.stringify(state.activeWorkout));
       localStorage.setItem('apex_gemini_key', state.geminiKey);
+      localStorage.setItem('apex_fb_url', state.fbUrl);
+      localStorage.setItem('apex_fb_pin', state.fbPin);
+      localStorage.setItem('apex_last_updated', String(state.lastUpdated));
+    }
+
+    function saveState() {
+      state.lastUpdated = Date.now();
+      persistLocalOnly();
+      pushToCloud();
     }
 
     function t(key) { return I18N[state.lang][key] || key; }
@@ -540,7 +636,7 @@
 
     function toggleLanguage() {
       state.lang = state.lang === 'it' ? 'en' : 'it';
-      saveState(); updateStaticLabels(); renderCurrentView();
+      persistLocalOnly(); updateStaticLabels(); renderCurrentView();
     }
 
     function updateStaticLabels() {
@@ -858,11 +954,29 @@
             }).join('')}
           </div>
         </div>
-        <div class="card" style="margin-top:16px">
-          <h3>🔄 Sync Xiaomi 15T Pro ↔ Pad 7 Pro</h3>
-          <div class="row-gap" style="margin-top:10px">
-            <button class="btn-outline" onclick="exportBackup()">${t('export_json')}</button>
-            <label class="btn-outline" style="cursor:pointer">${t('import_json')}<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
+
+        <!-- CLOUD SYNC FIREBASE (XIAOMI 15T PRO <-> PAD 7 PRO) -->
+        <div class="card" style="margin-top:16px; border-color: rgba(255,85,0,0.4);">
+          <h3>☁️ Cloud Sync Automatico (15T Pro ↔ Pad 7 Pro)</h3>
+          <p class="small muted" style="margin:6px 0 10px">Inserisci l'URL del tuo Firebase Realtime Database e lo stesso PIN segreto su entrambi i dispositivi.</p>
+          <div style="display:grid; gap:8px;">
+            <input type="url" id="fb-url-input" class="input-field" placeholder="https://tuo-progetto-default-rtdb.europe-west1.firebasedatabase.app" value="${state.fbUrl}">
+            <div class="row-gap">
+              <input type="text" id="fb-pin-input" class="input-field" placeholder="PIN Segreto (es. ricky-gym-2026)" value="${state.fbPin}">
+              <button class="btn-primary" onclick="
+                state.fbUrl = document.getElementById('fb-url-input').value.trim();
+                state.fbPin = document.getElementById('fb-pin-input').value.trim();
+                persistLocalOnly();
+                startRealtimeSyncListener();
+                alert('Cloud Sync attivato!');
+              ">Connetti</button>
+            </div>
+          </div>
+          <div class="row-gap" style="margin-top:12px">
+            <button class="btn-outline btn-sm" onclick="pullFromCloud(true)">⬇️ Scarica dal Cloud</button>
+            <button class="btn-outline btn-sm" onclick="pushToCloud()">⬆️ Invia al Cloud</button>
+            <button class="btn-outline btn-sm" onclick="exportBackup()">${t('export_json')}</button>
+            <label class="btn-outline btn-sm" style="cursor:pointer">${t('import_json')}<input type="file" accept=".json" style="display:none" onchange="importBackup(event)"></label>
           </div>
         </div>
       `;
@@ -914,8 +1028,8 @@
           <h2>🤖 ${t('coach_title')}</h2>
           <p class="muted small">${t('coach_subtitle')}</p>
           <div class="row-gap" style="margin-top:10px">
-            <input type="password" id="gemini-key-input" class="input-field" placeholder="AIzaSy... (Gemini API Key opzionale)" value="${state.geminiKey}">
-            <button class="btn-outline" onclick="state.geminiKey=document.getElementById('gemini-key-input').value.trim();saveState();alert('Key salvata!')">${t('save_key')}</button>
+            <input type="password" id="gemini-key-input" class="input-field" placeholder="AQ... / AIzaSy... (Gemini API Key)" value="${state.geminiKey}">
+            <button class="btn-outline" onclick="state.geminiKey=document.getElementById('gemini-key-input').value.trim();persistLocalOnly();alert('Key salvata!')">${t('save_key')}</button>
           </div>
           <div class="chip-bar" style="margin-top:12px">
             <button class="chip" onclick="askCoach('${state.lang === 'it' ? 'Analizza il mio volume settimanale e i muscoli più affaticati' : 'Analyze my weekly volume'}')">📊 ${state.lang === 'it' ? 'Analisi Volume' : 'Volume Check'}</button>
@@ -934,7 +1048,7 @@
       `;
     }
 
-            async function askCoach(presetPrompt = null) {
+    async function askCoach(presetPrompt = null) {
       const input = document.getElementById('coach-input');
       const question = presetPrompt || (input ? input.value.trim() : '');
       if (!question) return;
@@ -987,14 +1101,13 @@
             const data = await res.json();
             if (res.ok) {
               const parts = data.candidates?.[0]?.content?.parts || [];
-              // Estrae tutti i blocchi di testo escludendo eventuali blocchi interni "thought"
               const textBlocks = parts.filter(p => p.text && !p.thought).map(p => p.text).join('\n').trim();
               const fallbackText = parts.map(p => p.text || '').join('\n').trim();
               if (textBlocks || fallbackText) {
                 reply = textBlocks || fallbackText;
                 break;
               } else {
-                debugInfo = `Modello ${modelName} ha risposto vuoto (finishReason: ${data.candidates?.[0]?.finishReason || 'N/A'})`;
+                debugInfo = `Modello ${modelName} vuoto (${data.candidates?.[0]?.finishReason || 'N/A'})`;
               }
             } else {
               debugInfo = `(${res.status}) ${modelName}: ${data.error?.message || 'Errore'}`;
@@ -1003,7 +1116,7 @@
           }
 
           if (!reply) {
-            reply = `⚠️ Nessun testo ricevuto (${debugInfo}).\n\n${localSmartReply}`;
+            reply = `⏳ *Server Google momentaneamente occupati (${debugInfo}) — attivo il Coach Locale:*\n\n${localSmartReply}`;
           }
         } catch (e) {
           reply = `⚠️ Errore di rete: ${e.message}\n\n${localSmartReply}`;
@@ -1020,6 +1133,7 @@
       updateStaticLabels();
       updateTimerUI();
       renderCurrentView();
+      startRealtimeSyncListener();
     });
   </script>
 </body>
