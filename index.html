@@ -934,7 +934,7 @@
       `;
     }
 
-        async function askCoach(presetPrompt = null) {
+            async function askCoach(presetPrompt = null) {
       const input = document.getElementById('coach-input');
       const question = presetPrompt || (input ? input.value.trim() : '');
       if (!question) return;
@@ -946,6 +946,10 @@
       const summaryContext = Object.keys(muscleStats).filter(m => muscleStats[m].sets > 0)
         .map(m => `${MUSCLE_GROUPS[m][state.lang]}: ${muscleStats[m].sets} serie (${muscleStats[m].recoveryPct}% rec)`).join(', ');
 
+      const localSmartReply = state.lang === 'it'
+        ? `📊 **Analisi Diretta Coach (Locale):**\n• **Storico:** ${state.history.length} sessioni.\n• **Volume 7gg:** ${summaryContext || 'Nessuna serie registrata'}.\n• **Consiglio:** Mantieni 10-18 serie allenanti settimanali per gruppo muscolare con RIR 1-2.`
+        : `📊 **Direct Coach Analysis (Local):**\n• **History:** ${state.history.length} workouts.\n• **7d Volume:** ${summaryContext || 'No sets logged'}.\n• **Tip:** Aim for 10-18 hard sets/week per muscle at 1-2 RIR.`;
+
       let reply = '';
       const cleanKey = (state.geminiKey || '').trim();
 
@@ -953,52 +957,61 @@
         try {
           const prompt = `Sei un coach esperto di bodybuilding, calisthenics e fisiologia. Rispondi in ${state.lang === 'it' ? 'italiano' : 'inglese'} in modo concreto e sintetico.\nDati atleta ultimi 7gg: ${state.history.length} allenamenti totali. Volume attivo: ${summaryContext || 'nessuno'}.\nDomanda: ${question}`;
 
-          // 1. Recupera tutti i modelli Gemini compatibili disponibili per la chiave
-          let candidateModels = ['models/gemini-3.8-flash'];
+          let candidateModels = ['models/gemini-3.8-flash', 'models/gemini-2.5-flash'];
           const listRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
             headers: { 'x-goog-api-key': cleanKey }
           });
           if (listRes.ok) {
             const listData = await listRes.json();
             const validModels = (listData.models || [])
-              .filter(m => m.name.includes('gemini') && (m.supportedGenerationMethods || []).includes('generateContent'))
+              .filter(m => m.name.includes('gemini') && !m.name.includes('image') && !m.name.includes('tts') && (m.supportedGenerationMethods || []).includes('generateContent'))
               .map(m => m.name);
-            // Ordina dando priorità ai modelli flash-lite / flash (più veloci e meno congestionati)
             validModels.sort((a, b) => (a.includes('lite') ? -1 : b.includes('lite') ? 1 : a.includes('flash') ? -1 : 1));
             if (validModels.length) candidateModels = validModels;
           }
 
-          // 2. Prova i modelli in cascata se uno restituisce 503 (sovraccarico) o 429
-          let lastError = '';
-          for (const modelName of candidateModels.slice(0, 4)) {
+          let debugInfo = '';
+          for (const modelName of candidateModels.slice(0, 5)) {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'x-goog-api-key': cleanKey
               },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
+              })
             });
 
             const data = await res.json();
             if (res.ok) {
-              reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Nessuna risposta generata.';
-              break;
+              const parts = data.candidates?.[0]?.content?.parts || [];
+              // Estrae tutti i blocchi di testo escludendo eventuali blocchi interni "thought"
+              const textBlocks = parts.filter(p => p.text && !p.thought).map(p => p.text).join('\n').trim();
+              const fallbackText = parts.map(p => p.text || '').join('\n').trim();
+              if (textBlocks || fallbackText) {
+                reply = textBlocks || fallbackText;
+                break;
+              } else {
+                debugInfo = `Modello ${modelName} ha risposto vuoto (finishReason: ${data.candidates?.[0]?.finishReason || 'N/A'})`;
+              }
             } else {
-              lastError = `(${res.status}) su ${modelName}: ${data.error?.message || 'Errore'}`;
-              if (res.status !== 503 && res.status !== 429) break; // Se non è sovraccarico, fermati
+              debugInfo = `(${res.status}) ${modelName}: ${data.error?.message || 'Errore'}`;
+              if (res.status !== 503 && res.status !== 429 && res.status !== 404) break;
             }
           }
 
-          if (!reply) reply = `⚠️ Tutti i modelli sono momentaneamente occupati. Ultimo dettaglio: ${lastError}`;
+          if (!reply) {
+            reply = `⚠️ Nessun testo ricevuto (${debugInfo}).\n\n${localSmartReply}`;
+          }
         } catch (e) {
-          reply = `⚠️ Errore di rete: ${e.message}`;
+          reply = `⚠️ Errore di rete: ${e.message}\n\n${localSmartReply}`;
         }
       } else {
-        reply = state.lang === 'it'
-          ? `📊 Analisi Locale (inserisci una API Key sopra per AI completa):\n• Allenamenti registrati: ${state.history.length}\n• Volume 7gg: ${summaryContext || '0 serie registrate'}`
-          : `📊 Local Analysis (add API Key above for full AI):\n• Workouts logged: ${state.history.length}\n• 7d Volume: ${summaryContext || '0 sets'}`;
+        reply = localSmartReply;
       }
+
       state.chatMessages.push({ role: 'ai', text: reply });
       renderCoachTab();
     }
