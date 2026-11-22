@@ -199,4 +199,61 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; display: fl
   .modal-backdrop { align-items: center; }
   .modal-sheet { border-radius: 20px; }
 }
+/* ================= MENU A TENDINA COERENTI & SELETTORE RICERCABILE ================= */
+select.input-field,
+select.set-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color-scheme: dark;
+  background-color: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FF5500' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 28px;
+  cursor: pointer;
+}
+select.set-select {
+  background-position: right 4px center;
+  background-size: 10px;
+  padding-right: 16px;
+}
+select.input-field:focus,
+select.set-select:focus {
+  border-color: var(--orange);
+  outline: none;
+}
+select option {
+  background-color: #16161C;
+  color: #F4F4F6;
+}
+
+.searchable-ex-list {
+  max-height: 210px;
+  overflow-y: auto;
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  padding-right: 2px;
+}
+.searchable-ex-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.searchable-ex-item:active {
+  border-color: var(--orange);
+  background: var(--orange-glow);
+}
+
 
