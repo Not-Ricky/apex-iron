@@ -1,0 +1,25 @@
+{
+  "name": "APEX IRON — Pro Strength & Calisthenics",
+  "short_name": "APEX IRON",
+  "description": "Tracker professionale di allenamento, forza e calisthenics con analisi muscolare e AI Coach",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2309090B'/%3E%3Cpath d='M110 216h40v80h-40zm252 0h40v80h-40zM166 176h36v160h-36zm144 0h36v160h-36zM202 240h108v32H202z' fill='%23FF5500'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2309090B'/%3E%3Cpath d='M110 216h40v80h-40zm252 0h40v80h-40zM166 176h36v160h-36zm144 0h36v160h-36zM202 240h108v32H202z' fill='%23FF5500'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
