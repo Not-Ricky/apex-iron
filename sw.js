@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apex-iron-v4.4-cache';
+const CACHE_NAME = 'apex-iron-v4.5-cache';
 const CORE_ASSETS = [
   './',
   './index.html',
