@@ -2664,4 +2664,555 @@ function openPlateCalculatorModal(initialWeight = 60) {
     <div id="plate-render-area">${renderPlatesHTML(startKg)}</div>
   `);
 }
+// ================= MOTORE UNIVERSALE MENU A TENDINA RICERCABILI (APEX DROPDOWN) =================
+const apexDropdownRegistry = {};
+
+function renderApexDropdown({ id, options, selectedValue = '', placeholder = 'Seleziona...', onSelectCode, compact = false, triggerClass = '' }) {
+  apexDropdownRegistry[id] = { options, selectedValue, onSelectCode, compact };
+  const selectedOpt = options.find(o => String(o.value) === String(selectedValue));
+  const triggerText = selectedOpt ? (selectedOpt.shortLabel || selectedOpt.label) : placeholder;
+
+  return `
+    <div class="apex-dd ${compact ? 'compact' : ''}" id="dd_${id}" onclick="event.stopPropagation()">
+      <button type="button" class="apex-dd-trigger ${triggerClass}" onclick="toggleApexDropdown('${id}')">
+        <span>${triggerText}</span>
+      </button>
+      <div class="apex-dd-panel" id="dd_panel_${id}">
+        <input type="search" class="apex-dd-search" id="dd_search_${id}"
+          placeholder="🔍 ${state.lang === 'it' ? 'Cerca...' : 'Search...'}"
+          oninput="filterApexDropdown('${id}', this.value)"
+          onclick="event.stopPropagation()">
+        <div class="apex-dd-options" id="dd_opts_${id}">
+          ${buildApexDropdownOptionsHTML(id, options, selectedValue)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildApexDropdownOptionsHTML(id, options, selectedValue) {
+  if (!options.length) {
+    return `<div class="small muted" style="padding:8px;text-align:center">${state.lang === 'it' ? 'Nessun risultato' : 'No results'}</div>`;
+  }
+  return options.map(opt => {
+    const isSel = String(opt.value) === String(selectedValue);
+    const safeVal = String(opt.value).replace(/'/g, "\\'");
+    return `
+      <div class="apex-dd-option ${isSel ? 'selected' : ''}" onclick="selectApexDropdownOption('${id}', '${safeVal}')">
+        <span>${opt.label}</span>
+        ${opt.sub ? `<span class="apex-dd-sub">${opt.sub}</span>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleApexDropdown(id) {
+  const el = document.getElementById(`dd_${id}`);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  closeAllApexDropdowns();
+  if (!wasOpen) {
+    el.classList.add('open');
+    const searchInput = document.getElementById(`dd_search_${id}`);
+    if (searchInput) {
+      searchInput.value = '';
+      filterApexDropdown(id, '');
+      setTimeout(() => searchInput.focus(), 30);
+    }
+  }
+}
+
+function closeAllApexDropdowns() {
+  document.querySelectorAll('.apex-dd.open').forEach(d => d.classList.remove('open'));
+}
+
+document.addEventListener('click', () => closeAllApexDropdowns());
+
+function filterApexDropdown(id, query) {
+  const reg = apexDropdownRegistry[id];
+  const box = document.getElementById(`dd_opts_${id}`);
+  if (!reg || !box) return;
+  const q = query.trim().toLowerCase();
+  const filtered = reg.options.filter(o =>
+    !q ||
+    o.label.toLowerCase().includes(q) ||
+    (o.sub && o.sub.toLowerCase().includes(q)) ||
+    String(o.value).toLowerCase().includes(q)
+  );
+  box.innerHTML = buildApexDropdownOptionsHTML(id, filtered, reg.selectedValue);
+}
+
+function selectApexDropdownOption(id, val) {
+  const reg = apexDropdownRegistry[id];
+  if (!reg) return;
+  reg.selectedValue = val;
+  const opt = reg.options.find(o => String(o.value) === String(val));
+  const triggerSpan = document.querySelector(`#dd_${id} .apex-dd-trigger span`);
+  if (triggerSpan && opt) triggerSpan.textContent = opt.shortLabel || opt.label;
+  closeAllApexDropdowns();
+  if (reg.onSelectCode) {
+    const fn = new Function('val', reg.onSelectCode);
+    fn(val);
+  }
+}
+
+function getSetTypeOptions() {
+  return [
+    { value: 'N', shortLabel: 'N', label: 'N — Normale', sub: 'Serie allenante standard' },
+    { value: 'W', shortLabel: 'W', label: 'W — Warm-Up', sub: 'Riscaldamento (escluso da volume/PR)' },
+    { value: 'D', shortLabel: 'D', label: 'D — Drop Set', sub: 'Serie a scalare' },
+    { value: 'F', shortLabel: 'F', label: 'F — Failure', sub: 'Cedimento muscolare' },
+    { value: 'RP', shortLabel: 'RP', label: 'RP — Rest-Pause', sub: 'Pausa breve intra-serie' }
+  ];
+}
+
+function getExerciseDropdownOptions() {
+  return getAllExercises().map(e => ({
+    value: e.id,
+    label: e.name[state.lang],
+    sub: `${MUSCLE_GROUPS[e.primary][state.lang]} • ${t('cat_' + e.category)}`
+  }));
+}
+
+// ================= OVERRIDE VIEW CON TUTTI I MENU A TENDINA AGGIORNATI =================
+function renderWorkoutTab() {
+  const container = document.getElementById('main-content');
+  if (!state.activeWorkout) {
+    const suggestion = getSuggestedNextWorkout();
+    container.innerHTML = `
+      <div class="card hero-card">
+        <div class="badge-orange">${t('no_active_workout')}</div>
+        <h2 style="margin-top:8px">${state.lang === 'it' ? 'Pronto ad allenarti?' : 'Ready to train?'}</h2>
+        <p class="muted small" style="margin-top:4px">${t('start_from_routine')}</p>
+        ${suggestion ? `
+          <div class="suggestion-box">
+            <span>🔥 ${t('next_suggested')} <strong>${suggestion.routine.name}</strong> (${suggestion.readiness}%)</span>
+            <button class="btn-primary btn-sm" onclick="startWorkout('${suggestion.routine.id}')">${t('start_routine')}</button>
+          </div>
+        ` : ''}
+        <button class="btn-outline full-width" style="margin-top:12px" onclick="startWorkout()">${t('free_workout')}</button>
+      </div>
+      <h3 class="section-title">${t('nav_routines')}</h3>
+      <div class="grid-cards">
+        ${state.routines.map(r => `
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="startWorkout('${r.id}')">
+            <div>
+              <div class="card-title">${r.name}</div>
+              <div class="muted small">${r.exercises.length} ${state.lang === 'it' ? 'esercizi' : 'exercises'}</div>
+            </div>
+            <span style="color:var(--orange);font-weight:800">▶</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  let liveVol = 0, liveSets = 0;
+  state.activeWorkout.exercises.forEach(ex => ex.sets.forEach(s => {
+    if (s.done) { liveSets++; liveVol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0); }
+  }));
+  const elapsedMin = Math.max(1, Math.round((Date.now() - state.activeWorkout.startTime) / 60000));
+  const ssBadges = computeSupersetBadges(state.activeWorkout.exercises);
+  const setTypes = getSetTypeOptions();
+
+  container.innerHTML = `
+    <div class="workout-timer-dock">
+      <div class="timer-row">
+        <div>
+          <span class="small muted" style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.6px">⏱️ Timer Recupero</span>
+          <span id="timer-display" onclick="openTimerInputModal()">${formatTime(state.timer.remaining)}</span>
+        </div>
+        <div class="timer-ctrl-group">
+          <button class="timer-btn ${wakeLockEnabled ? 'wake-active' : ''}" id="wake-lock-btn" onclick="toggleWakeLockManual()" title="Schermo sempre acceso">🔆</button>
+          <button class="timer-btn" onclick="adjustTimer(-15)">-15s</button>
+          <button class="timer-btn" onclick="adjustTimer(15)">+15s</button>
+          <button class="timer-btn timer-btn-play" id="timer-toggle-btn" onclick="toggleTimer()">${state.timer.running ? '⏸' : '▶'}</button>
+        </div>
+      </div>
+      <div class="live-metrics-strip">
+        <span>🕒 ${elapsedMin} min</span>
+        <span>✅ ${liveSets} serie</span>
+        <span>⚖️ ${Math.round(liveVol)} kg</span>
+      </div>
+      <div class="timer-progress-bar" id="timer-progress" style="width:${Math.min(100, (state.timer.remaining / Math.max(1, state.timer.defaultSeconds)) * 100)}%"></div>
+    </div>
+
+    <div class="workout-header-bar">
+      <div><span class="badge-orange">${t('active_workout')}</span><h2 style="margin-top:4px">${state.activeWorkout.name}</h2></div>
+      <div class="row-gap">
+        <button class="btn-danger-ghost" onclick="openApexConfirmModal('${state.lang === 'it' ? 'Annullare la sessione in corso? I dati non salvati andranno persi.' : 'Cancel current session? Unsaved data will be lost.'}', 'executeCancelActiveWorkout')">${t('cancel_workout')}</button>
+        <button class="btn-primary" onclick="finishWorkout()">${t('finish_workout')}</button>
+      </div>
+    </div>
+
+    <div class="workout-exercises-list">
+      ${state.activeWorkout.exercises.map((exItem, exIdx) => {
+        const dbEx = getExercise(exItem.exerciseId);
+        const prev = getPreviousPerformance(exItem.exerciseId);
+        const { best1RM } = getBest1RMForExercise(exItem.exerciseId);
+        const rank = calculateStrengthRank(exItem.exerciseId, best1RM);
+        const sampleKg = parseFloat(exItem.sets.find(s => s.type !== 'W')?.weight || exItem.sets[0]?.weight) || 60;
+        const ss = ssBadges[exIdx];
+        const ssClass = ss ? `superset-card ${ss.isFirst ? 'superset-connected-top' : (ss.isLast ? 'superset-connected-bot' : 'superset-connected-mid')}` : '';
+
+        return `
+          <div class="card ${ssClass}">
+            <div class="ex-log-header">
+              <div>
+                <div class="row-gap" style="flex-wrap:wrap">
+                  ${ss ? `<span class="badge-superset">🔗 ${ss.label} ${ss.isLast ? '• Timer ON' : '• No Rest'}</span>` : ''}
+                  <span class="card-title">${dbEx.name[state.lang]}</span>
+                  <span class="rank-pill rank-${rank}">${rank}</span>
+                </div>
+                <div class="prev-ghost">${t('prev_session')} ${prev || t('no_prev')}</div>
+              </div>
+              <div class="row-gap" style="flex-shrink:0">
+                <button class="btn-icon" onclick="toggleSupersetLink(${exIdx})" title="${ss ? 'Scollega Superset' : 'Collega in Superset'}" style="${ss ? 'border-color:var(--purple);color:var(--purple)' : ''}">🔗</button>
+                <button class="btn-icon" onclick="openWarmupGeneratorModal(${exIdx})" title="Genera Warm-Up">🔥</button>
+                <button class="btn-icon" onclick="openPlateCalculatorModal(${sampleKg})" title="Calcola Dischi">🏋️</button>
+                <button class="btn-icon" onclick="openExerciseDetailModal('${dbEx.id}')" title="Tecnica">ℹ️</button>
+              </div>
+            </div>
+            <input type="text" class="notes-input" placeholder="${t('notes_placeholder')}" value="${exItem.notes || ''}"
+              onchange="state.activeWorkout.exercises[${exIdx}].notes=this.value;saveState();">
+            <div class="sets-table">
+              <div class="sets-head"><span>#</span><span>Tipo</span><span>KG</span><span>RIP</span><span>RIR</span><span>RPE</span><span>✓</span></div>
+              ${exItem.sets.map((s, sIdx) => `
+                <div class="set-row ${s.done ? 'set-done' : ''} ${s.isPR ? 'set-pr-row' : ''}">
+                  <span class="set-num" onclick="removeSet(${exIdx},${sIdx})">${s.isPR ? '🏆' : (sIdx + 1)}</span>
+                  ${renderApexDropdown({
+                    id: `w_set_${exIdx}_${sIdx}`,
+                    options: setTypes,
+                    selectedValue: s.type,
+                    compact: true,
+                    triggerClass: `type-${s.type}`,
+                    onSelectCode: `updateSetField(${exIdx}, ${sIdx}, 'type', val)`
+                  })}
+                  <input type="number" step="0.5" inputmode="decimal" class="set-input" placeholder="0" value="${s.weight}" onchange="updateSetField(${exIdx},${sIdx},'weight',this.value)">
+                  <input type="number" inputmode="numeric" class="set-input" placeholder="0" value="${s.reps}" onchange="updateSetField(${exIdx},${sIdx},'reps',this.value)">
+                  <input type="number" min="0" max="10" inputmode="numeric" class="set-input" placeholder="-" value="${s.rir}" onchange="updateSetField(${exIdx},${sIdx},'rir',this.value)">
+                  <input type="number" step="0.5" min="1" max="10" inputmode="decimal" class="set-input" placeholder="-" value="${s.rpe}" onchange="updateSetField(${exIdx},${sIdx},'rpe',this.value)">
+                  <input type="checkbox" class="set-check" ${s.done ? 'checked' : ''} onchange="updateSetField(${exIdx},${sIdx},'done',this.checked)">
+                </div>
+              `).join('')}
+            </div>
+            <div class="row-gap" style="margin-top:10px">
+              <button class="btn-outline btn-sm full-width" onclick="addSetToActive(${exIdx})">${t('add_set')}</button>
+              <button class="btn-outline btn-sm" onclick="copyLastSetValues(${exIdx})">${t('copy_prev')}</button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <label class="small muted" style="font-weight:700;display:block;margin-bottom:8px">${t('add_exercise')}</label>
+      ${renderApexDropdown({
+        id: 'workout_quick_add',
+        options: getExerciseDropdownOptions(),
+        selectedValue: '',
+        placeholder: `➕ ${state.lang === 'it' ? 'Scegli o cerca esercizio da aggiungere...' : 'Select or search exercise to add...'}`,
+        onSelectCode: `addExerciseToActiveWorkout(val)`
+      })}
+    </div>
+  `;
+}
+
+// --- SCHEDE (ROUTINE BUILDER CON TENDINA RICERCABILE) ---
+let selectedBuilderExerciseId = 'bench_press_barbell';
+function renderRoutinesTab() {
+  const container = document.getElementById('main-content');
+  const exOpts = getExerciseDropdownOptions();
+  if (!selectedBuilderExerciseId && exOpts.length) selectedBuilderExerciseId = exOpts[0].value;
+
+  container.innerHTML = `
+    <div class="workout-header-bar">
+      <h2>${t('nav_routines')}</h2>
+      <button class="btn-primary" onclick="openRoutineBuilder()">${t('create_routine')}</button>
+    </div>
+    <div id="routine-builder-box" class="card" style="display:none; border-color: var(--orange);">
+      <h3>${t('create_routine')}</h3>
+      <input type="text" id="builder-name" class="input-field" placeholder="${t('routine_name')}" style="margin:10px 0">
+      <div class="row-gap">
+        ${renderApexDropdown({
+          id: 'routine_builder_ex',
+          options: exOpts,
+          selectedValue: selectedBuilderExerciseId,
+          onSelectCode: `selectedBuilderExerciseId = val`
+        })}
+        <button class="btn-primary" onclick="if(selectedBuilderExerciseId){tempRoutineExercises.push(selectedBuilderExerciseId);renderBuilderList();}">+</button>
+      </div>
+      <div id="builder-ex-list" style="margin:12px 0"></div>
+      <div class="row-gap">
+        <button class="btn-primary" onclick="saveRoutineBuilder()">${t('save_routine')}</button>
+        <button class="btn-danger-ghost" onclick="document.getElementById('routine-builder-box').style.display='none'">${t('cancel_workout')}</button>
+      </div>
+    </div>
+    <div class="grid-cards">
+      ${state.routines.map(r => `
+        <div class="card">
+          <div class="ex-log-header">
+            <div class="card-title">${r.name}</div>
+            <div class="row-gap">
+              <button class="btn-primary btn-sm" onclick="startWorkout('${r.id}')">${t('start_routine')}</button>
+              <button class="btn-icon" onclick="openRoutineBuilder('${r.id}')">✏️</button>
+              <button class="btn-icon" onclick="deleteRoutine('${r.id}')">🗑️</button>
+            </div>
+          </div>
+          <ul class="routine-ex-preview">${r.exercises.map(id => `<li>• ${getExercise(id).name[state.lang]}</li>`).join('')}</ul>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// --- MODALE ESERCIZIO CUSTOM CON TENDINE RICERCABILI ---
+let customExCatVal = 'bodybuilding';
+let customExMuscleVal = 'chest';
+function openCustomExerciseModal() {
+  customExCatVal = 'bodybuilding';
+  customExMuscleVal = 'chest';
+  const catOpts = [
+    { value: 'bodybuilding', label: 'Bodybuilding' },
+    { value: 'calisthenics', label: 'Calisthenics' },
+    { value: 'bodyweight', label: state.lang === 'it' ? 'Corpo Libero' : 'Bodyweight' },
+    { value: 'mobility', label: state.lang === 'it' ? 'Mobilità' : 'Mobility' }
+  ];
+  const muscleOpts = Object.keys(MUSCLE_GROUPS)
+    .filter(m => m !== 'mobility')
+    .map(m => ({ value: m, label: MUSCLE_GROUPS[m][state.lang] }));
+
+  openModal(`
+    <div class="ex-log-header">
+      <h3>➕ ${t('create_custom_ex')}</h3>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div style="display:grid;gap:10px;margin-top:12px">
+      <input type="text" id="cust-ex-name" class="input-field" placeholder="${state.lang === 'it' ? 'Nome Esercizio (es. Chest Press Technogym)' : 'Exercise Name'}">
+      ${renderApexDropdown({
+        id: 'cust_ex_cat_dd',
+        options: catOpts,
+        selectedValue: customExCatVal,
+        onSelectCode: `customExCatVal = val`
+      })}
+      ${renderApexDropdown({
+        id: 'cust_ex_muscle_dd',
+        options: muscleOpts,
+        selectedValue: customExMuscleVal,
+        onSelectCode: `customExMuscleVal = val`
+      })}
+      <input type="text" id="cust-ex-exec" class="input-field" placeholder="${state.lang === 'it' ? 'Note esecuzione (opzionale)' : 'Execution cue (optional)'}">
+      <button class="btn-primary full-width" onclick="
+        const n = document.getElementById('cust-ex-name').value.trim();
+        if (!n) return;
+        state.customExercises.push({
+          id: 'custom_' + Date.now(),
+          category: customExCatVal,
+          primary: customExMuscleVal,
+          secondary: [],
+          name: { it: n, en: n },
+          exec: { it: document.getElementById('cust-ex-exec').value.trim() || 'Esercizio personalizzato.', en: 'Custom exercise.' },
+          alt: { it: 'Variante libera equivalente.', en: 'Equivalent free-weight variant.' }
+        });
+        rebuildExerciseCache();
+        saveState(true); closeModal(); renderExercisesTab();
+      ">${t('save_routine')}</button>
+    </div>
+  `);
+}
+
+// --- ANALISI CORPO CON TENDINA RICERCABILE ---
+function renderBodyMeasurementsSubtab() {
+  const box = document.getElementById('analytics-sub-content');
+  const sortedLogs = [...state.bodyLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const latest = sortedLogs[sortedLogs.length - 1] || {};
+  const metric = state.selectedBodyMetric;
+
+  const metricLabels = {
+    weight: { label: 'Peso Corporeo', unit: 'kg' },
+    bf: { label: 'Massa Grassa (BF%)', unit: '%' },
+    chest: { label: 'Petto', unit: 'cm' },
+    arm: { label: 'Braccio', unit: 'cm' },
+    waist: { label: 'Vita', unit: 'cm' },
+    thigh: { label: 'Coscia', unit: 'cm' }
+  };
+  const metricOptions = Object.keys(metricLabels).map(k => ({
+    value: k,
+    label: `${metricLabels[k].label} (${metricLabels[k].unit})`
+  }));
+
+  const chartPoints = sortedLogs
+    .filter(l => l[metric] !== undefined && l[metric] !== '' && !isNaN(parseFloat(l[metric])))
+    .map(l => ({
+      date: new Date(l.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: '2-digit' }),
+      value: parseFloat(l[metric])
+    }));
+
+  box.innerHTML = `
+    <div class="card">
+      <h3>📏 Registra Misure Corporee</h3>
+      <p class="small muted" style="margin-top:4px">Aggiornando il peso corporeo vengono ricalibrati automaticamente anche i Ranking di Forza.</p>
+      <div class="body-grid-inputs">
+        <div><label class="small muted">Peso (kg)</label><input type="number" step="0.1" id="bm-weight" class="input-field mono" value="${latest.weight || state.bodyweight}"></div>
+        <div><label class="small muted">BF (%)</label><input type="number" step="0.1" id="bm-bf" class="input-field mono" placeholder="14.5" value="${latest.bf || ''}"></div>
+        <div><label class="small muted">Petto (cm)</label><input type="number" step="0.5" id="bm-chest" class="input-field mono" placeholder="102" value="${latest.chest || ''}"></div>
+        <div><label class="small muted">Braccio (cm)</label><input type="number" step="0.5" id="bm-arm" class="input-field mono" placeholder="38" value="${latest.arm || ''}"></div>
+        <div><label class="small muted">Vita (cm)</label><input type="number" step="0.5" id="bm-waist" class="input-field mono" placeholder="78" value="${latest.waist || ''}"></div>
+        <div><label class="small muted">Coscia (cm)</label><input type="number" step="0.5" id="bm-thigh" class="input-field mono" placeholder="58" value="${latest.thigh || ''}"></div>
+      </div>
+      <input type="text" id="bm-notes" class="input-field" placeholder="Note condizione fisica, idratazione..." style="margin-bottom:10px">
+      <button class="btn-primary full-width" onclick="saveBodyMeasurement()">💾 Salva Misurazione</button>
+    </div>
+
+    <div class="card">
+      <div class="ex-log-header" style="gap:12px">
+        <h3 style="white-space:nowrap">📈 Andamento</h3>
+        <div style="flex:1;max-width:240px">
+          ${renderApexDropdown({
+            id: 'body_metric_dd',
+            options: metricOptions,
+            selectedValue: metric,
+            onSelectCode: `state.selectedBodyMetric = val; renderBodyMeasurementsSubtab();`
+          })}
+        </div>
+      </div>
+      ${renderSVGChart(chartPoints, metricLabels[metric].unit)}
+    </div>
+
+    <h3 class="section-title">Storico Misurazioni (${sortedLogs.length})</h3>
+    ${sortedLogs.length === 0 ? `<div class="card"><p class="muted small">Nessuna misurazione registrata finora.</p></div>` : ''}
+    ${[...sortedLogs].reverse().map(log => `
+      <div class="card">
+        <div class="ex-log-header">
+          <div>
+            <strong>📅 ${new Date(log.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+            ${log.notes ? `<div class="small muted">${log.notes}</div>` : ''}
+          </div>
+          <button class="btn-icon" style="color:var(--red)" onclick="deleteBodyMeasurement('${log.id}')">🗑️</button>
+        </div>
+        <div class="mono small" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px">
+          ${log.weight ? `<span>⚖️ <strong>${log.weight} kg</strong></span>` : ''}
+          ${log.bf ? `<span>🔥 BF: <strong>${log.bf}%</strong></span>` : ''}
+          ${log.chest ? `<span>Petto: <strong>${log.chest}cm</strong></span>` : ''}
+          ${log.arm ? `<span>Braccio: <strong>${log.arm}cm</strong></span>` : ''}
+          ${log.waist ? `<span>Vita: <strong>${log.waist}cm</strong></span>` : ''}
+          ${log.thigh ? `<span>Coscia: <strong>${log.thigh}cm</strong></span>` : ''}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// --- CURVA 1RM CON TENDINA RICERCABILE ---
+const origRenderMusclesAndRanksSubtab = renderMusclesAndRanksSubtab;
+renderMusclesAndRanksSubtab = function() {
+  origRenderMusclesAndRanksSubtab();
+  const box = document.getElementById('analytics-sub-content');
+  if (!box) return;
+  const nativeSelect = box.querySelector('select.input-field');
+  if (nativeSelect) {
+    const chartExOpts = getAllExercises()
+      .filter(e => e.category !== 'mobility' && e.category !== 'stretching')
+      .map(e => ({ value: e.id, label: e.name[state.lang], sub: MUSCLE_GROUPS[e.primary][state.lang] }));
+    const wrapper = document.createElement('div');
+    wrapper.style.margin = '10px 0';
+    wrapper.innerHTML = renderApexDropdown({
+      id: 'chart_1rm_ex_dd',
+      options: chartExOpts,
+      selectedValue: state.selectedChartEx,
+      onSelectCode: `state.selectedChartEx = val; renderAnalyticsTab();`
+    });
+    nativeSelect.replaceWith(wrapper);
+  }
+};
+
+// --- EDITOR STORICO CON TENDINE RICERCABILI ---
+let editModalAddExId = 'bench_press_barbell';
+function renderEditHistoryModalBody() {
+  const draft = state.editingWorkoutDraft;
+  if (!draft) return;
+
+  const dateVal = toLocalInputDate(draft.startTime);
+  const startTimeVal = toLocalInputTime(draft.startTime);
+  const endTimeVal = toLocalInputTime(draft.endTime);
+  const setTypes = getSetTypeOptions();
+  const exOpts = getExerciseDropdownOptions();
+
+  openModal(`
+    <div class="ex-log-header" style="margin-bottom:10px">
+      <h3>✏️ Modifica Allenamento</h3>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+
+    <div style="display:grid;gap:8px;margin-bottom:14px">
+      <label class="small muted">Nome Scheda / Sessione</label>
+      <input type="text" class="input-field" value="${draft.name}" onchange="state.editingWorkoutDraft.name=this.value">
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px">
+        <div><label class="small muted">Data</label><input type="date" id="edit-w-date" class="input-field" value="${dateVal}"></div>
+        <div><label class="small muted">Ora Inizio</label><input type="time" id="edit-w-start" class="input-field mono" value="${startTimeVal}"></div>
+        <div><label class="small muted">Ora Fine</label><input type="time" id="edit-w-end" class="input-field mono" value="${endTimeVal}"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:10px">
+      ${draft.exercises.map((exItem, exIdx) => {
+        const dbEx = getExercise(exItem.exerciseId);
+        return `
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px">
+            <div class="ex-log-header">
+              <strong class="small">${dbEx.name[state.lang]}</strong>
+              <button class="btn-danger-ghost btn-sm" onclick="state.editingWorkoutDraft.exercises.splice(${exIdx},1);renderEditHistoryModalBody();">🗑️ Rimuovi</button>
+            </div>
+            <input type="text" class="notes-input" placeholder="Note esercizio..." value="${exItem.notes || ''}"
+              onchange="state.editingWorkoutDraft.exercises[${exIdx}].notes=this.value">
+            <div class="sets-head"><span>#</span><span>Tipo</span><span>KG</span><span>RIP</span><span>RIR</span><span>RPE</span><span>✓</span></div>
+            ${exItem.sets.map((s, sIdx) => `
+              <div class="set-row ${s.done ? 'set-done' : ''}">
+                <span class="set-num" onclick="state.editingWorkoutDraft.exercises[${exIdx}].sets.splice(${sIdx},1);renderEditHistoryModalBody();">${sIdx + 1}</span>
+                ${renderApexDropdown({
+                  id: `edit_set_${exIdx}_${sIdx}`,
+                  options: setTypes,
+                  selectedValue: s.type,
+                  compact: true,
+                  triggerClass: `type-${s.type}`,
+                  onSelectCode: `state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].type = val;`
+                })}
+                <input type="number" step="0.5" class="set-input" value="${s.weight}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].weight=this.value">
+                <input type="number" class="set-input" value="${s.reps}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].reps=this.value">
+                <input type="number" class="set-input" value="${s.rir}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].rir=this.value">
+                <input type="number" step="0.5" class="set-input" value="${s.rpe}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].rpe=this.value">
+                <input type="checkbox" class="set-check" ${s.done ? 'checked' : ''} onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].done=this.checked;renderEditHistoryModalBody();">
+              </div>
+            `).join('')}
+            <button class="btn-outline btn-sm full-width" style="margin-top:8px" onclick="
+              const last = state.editingWorkoutDraft.exercises[${exIdx}].sets.slice(-1)[0] || {type:'N',weight:'',reps:'',rir:'2',rpe:'8',done:true};
+              state.editingWorkoutDraft.exercises[${exIdx}].sets.push({...last, done:true});
+              renderEditHistoryModalBody();
+            ">+ Aggiungi Serie</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div class="row-gap" style="margin-top:12px">
+      ${renderApexDropdown({
+        id: 'edit_modal_add_ex',
+        options: exOpts,
+        selectedValue: editModalAddExId,
+        onSelectCode: `editModalAddExId = val`
+      })}
+      <button class="btn-outline" style="white-space:nowrap" onclick="
+        state.editingWorkoutDraft.exercises.push({exerciseId: editModalAddExId, notes:'', sets:[{type:'N',weight:'',reps:'',rir:'2',rpe:'8',done:true}]});
+        renderEditHistoryModalBody();
+      ">+ Esercizio</button>
+    </div>
+
+    <div class="row-gap" style="margin-top:16px">
+      <button class="btn-primary full-width" onclick="saveEditedHistoryWorkout()">💾 Salva Modifiche & Ricalcola</button>
+      <button class="btn-outline" onclick="closeModal()">Annulla</button>
+    </div>
+  `);
+}
 
