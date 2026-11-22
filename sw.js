@@ -1,9 +1,8 @@
-const CACHE_NAME = 'apex-iron-modular-v4.6';
+const CACHE_NAME = 'apex-iron-v4.6-standalone';
 const ASSETS = [
   './',
   './index.html',
   './style.css?v=4.6',
-  './exercises-db.js?v=4.6',
   './app.js?v=4.6',
   './manifest.json'
 ];
