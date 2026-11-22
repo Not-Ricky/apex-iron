@@ -2321,4 +2321,347 @@ function openPlateCalculatorModal(initialWeight = 60) {
     <div id="plate-render-area">${renderPlatesHTML(startKg)}</div>
   `);
 }
+// ================= AGGIORNAMENTI UI: CONFERME APEX IRON, RICERCA WORKOUT & MODALI =================
+function openApexConfirmModal(message, onConfirmFnName) {
+  openModal(`
+    <div class="ex-log-header">
+      <div class="brand" style="font-size:1rem">APEX<span>IRON</span></div>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <p style="margin:14px 0 18px;font-size:0.95rem;line-height:1.45">${message}</p>
+    <div class="row-gap">
+      <button class="btn-danger full-width" onclick="closeModal();${onConfirmFnName}()">Conferma</button>
+      <button class="btn-outline full-width" onclick="closeModal()">Annulla</button>
+    </div>
+  `);
+}
+
+function executeCancelActiveWorkout() {
+  state.activeWorkout = null;
+  clearInterval(state.timer.interval);
+  state.timer.interval = null;
+  state.timer.running = false;
+  releaseWakeLock();
+  saveState(true);
+  renderWorkoutTab();
+}
+
+let pendingDeleteRoutineId = null;
+function executeDeleteRoutineConfirmed() {
+  if (!pendingDeleteRoutineId) return;
+  state.routines = state.routines.filter(r => r.id !== pendingDeleteRoutineId);
+  pendingDeleteRoutineId = null;
+  saveState(true);
+  renderRoutinesTab();
+}
+
+function deleteRoutine(id) {
+  pendingDeleteRoutineId = id;
+  const msg = state.lang === 'it' ? 'Eliminare definitivamente questa scheda?' : 'Delete this routine permanently?';
+  openApexConfirmModal(msg, 'executeDeleteRoutineConfirmed');
+}
+
+function renderQuickAddExerciseOptions(query = '') {
+  const q = query.trim().toLowerCase();
+  const list = getAllExercises().filter(e =>
+    !q ||
+    e.name[state.lang].toLowerCase().includes(q) ||
+    MUSCLE_GROUPS[e.primary][state.lang].toLowerCase().includes(q)
+  );
+  if (!list.length) {
+    return `<div class="small muted" style="padding:10px;text-align:center">${state.lang === 'it' ? 'Nessun esercizio trovato.' : 'No exercise found.'}</div>`;
+  }
+  return list.slice(0, 25).map(e => `
+    <div class="searchable-ex-item" onclick="addExerciseToActiveWorkout('${e.id}')">
+      <div>
+        <div class="small"><strong>${e.name[state.lang]}</strong></div>
+        <div class="small muted" style="font-size:0.74rem">${MUSCLE_GROUPS[e.primary][state.lang]}</div>
+      </div>
+      <span class="badge-orange">+</span>
+    </div>
+  `).join('');
+}
+
+function filterQuickAddExercises(val) {
+  const box = document.getElementById('quick-add-ex-results');
+  if (box) box.innerHTML = renderQuickAddExerciseOptions(val);
+}
+
+function addExerciseToActiveWorkout(exId) {
+  if (!state.activeWorkout) return;
+  state.activeWorkout.exercises.push({
+    exerciseId: exId,
+    notes: '',
+    sets: [{ type: 'N', weight: '', reps: '', rir: '2', rpe: '8', done: false, isPR: false }]
+  });
+  saveState();
+  renderWorkoutTab();
+}
+
+function renderWorkoutTab() {
+  const container = document.getElementById('main-content');
+  if (!state.activeWorkout) {
+    const suggestion = getSuggestedNextWorkout();
+    container.innerHTML = `
+      <div class="card hero-card">
+        <div class="badge-orange">${t('no_active_workout')}</div>
+        <h2 style="margin-top:8px">${state.lang === 'it' ? 'Pronto ad allenarti?' : 'Ready to train?'}</h2>
+        <p class="muted small" style="margin-top:4px">${t('start_from_routine')}</p>
+        ${suggestion ? `
+          <div class="suggestion-box">
+            <span>🔥 ${t('next_suggested')} <strong>${suggestion.routine.name}</strong> (${suggestion.readiness}%)</span>
+            <button class="btn-primary btn-sm" onclick="startWorkout('${suggestion.routine.id}')">${t('start_routine')}</button>
+          </div>
+        ` : ''}
+        <button class="btn-outline full-width" style="margin-top:12px" onclick="startWorkout()">${t('free_workout')}</button>
+      </div>
+      <h3 class="section-title">${t('nav_routines')}</h3>
+      <div class="grid-cards">
+        ${state.routines.map(r => `
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="startWorkout('${r.id}')">
+            <div>
+              <div class="card-title">${r.name}</div>
+              <div class="muted small">${r.exercises.length} ${state.lang === 'it' ? 'esercizi' : 'exercises'}</div>
+            </div>
+            <span style="color:var(--orange);font-weight:800">▶</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    return;
+  }
+
+  let liveVol = 0, liveSets = 0;
+  state.activeWorkout.exercises.forEach(ex => ex.sets.forEach(s => {
+    if (s.done) { liveSets++; liveVol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0); }
+  }));
+  const elapsedMin = Math.max(1, Math.round((Date.now() - state.activeWorkout.startTime) / 60000));
+  const ssBadges = computeSupersetBadges(state.activeWorkout.exercises);
+
+  container.innerHTML = `
+    <div class="workout-timer-dock">
+      <div class="timer-row">
+        <div>
+          <span class="small muted" style="display:block;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.6px">⏱️ Timer Recupero</span>
+          <span id="timer-display" onclick="openTimerInputModal()">${formatTime(state.timer.remaining)}</span>
+        </div>
+        <div class="timer-ctrl-group">
+          <button class="timer-btn ${wakeLockEnabled ? 'wake-active' : ''}" id="wake-lock-btn" onclick="toggleWakeLockManual()" title="Schermo sempre acceso">🔆</button>
+          <button class="timer-btn" onclick="adjustTimer(-15)">-15s</button>
+          <button class="timer-btn" onclick="adjustTimer(15)">+15s</button>
+          <button class="timer-btn timer-btn-play" id="timer-toggle-btn" onclick="toggleTimer()">${state.timer.running ? '⏸' : '▶'}</button>
+        </div>
+      </div>
+      <div class="live-metrics-strip">
+        <span>🕒 ${elapsedMin} min</span>
+        <span>✅ ${liveSets} serie</span>
+        <span>⚖️ ${Math.round(liveVol)} kg</span>
+      </div>
+      <div class="timer-progress-bar" id="timer-progress" style="width:${Math.min(100, (state.timer.remaining / Math.max(1, state.timer.defaultSeconds)) * 100)}%"></div>
+    </div>
+
+    <div class="workout-header-bar">
+      <div><span class="badge-orange">${t('active_workout')}</span><h2 style="margin-top:4px">${state.activeWorkout.name}</h2></div>
+      <div class="row-gap">
+        <button class="btn-danger-ghost" onclick="openApexConfirmModal('${state.lang === 'it' ? 'Annullare la sessione in corso? I dati non salvati andranno persi.' : 'Cancel current session? Unsaved data will be lost.'}', 'executeCancelActiveWorkout')">${t('cancel_workout')}</button>
+        <button class="btn-primary" onclick="finishWorkout()">${t('finish_workout')}</button>
+      </div>
+    </div>
+
+    <div class="workout-exercises-list">
+      ${state.activeWorkout.exercises.map((exItem, exIdx) => {
+        const dbEx = getExercise(exItem.exerciseId);
+        const prev = getPreviousPerformance(exItem.exerciseId);
+        const { best1RM } = getBest1RMForExercise(exItem.exerciseId);
+        const rank = calculateStrengthRank(exItem.exerciseId, best1RM);
+        const sampleKg = parseFloat(exItem.sets.find(s => s.type !== 'W')?.weight || exItem.sets[0]?.weight) || 60;
+        const ss = ssBadges[exIdx];
+        const ssClass = ss ? `superset-card ${ss.isFirst ? 'superset-connected-top' : (ss.isLast ? 'superset-connected-bot' : 'superset-connected-mid')}` : '';
+
+        return `
+          <div class="card ${ssClass}">
+            <div class="ex-log-header">
+              <div>
+                <div class="row-gap" style="flex-wrap:wrap">
+                  ${ss ? `<span class="badge-superset">🔗 ${ss.label} ${ss.isLast ? '• Timer ON' : '• No Rest'}</span>` : ''}
+                  <span class="card-title">${dbEx.name[state.lang]}</span>
+                  <span class="rank-pill rank-${rank}">${rank}</span>
+                </div>
+                <div class="prev-ghost">${t('prev_session')} ${prev || t('no_prev')}</div>
+              </div>
+              <div class="row-gap" style="flex-shrink:0">
+                <button class="btn-icon" onclick="toggleSupersetLink(${exIdx})" title="${ss ? 'Scollega Superset' : 'Collega in Superset con esercizio successivo'}" style="${ss ? 'border-color:var(--purple);color:var(--purple)' : ''}">🔗</button>
+                <button class="btn-icon" onclick="openWarmupGeneratorModal(${exIdx})" title="Genera Warm-Up">🔥</button>
+                <button class="btn-icon" onclick="openPlateCalculatorModal(${sampleKg})" title="Calcola Dischi">🏋️</button>
+                <button class="btn-icon" onclick="openExerciseDetailModal('${dbEx.id}')" title="Tecnica">ℹ️</button>
+              </div>
+            </div>
+            <input type="text" class="notes-input" placeholder="${t('notes_placeholder')}" value="${exItem.notes || ''}"
+              onchange="state.activeWorkout.exercises[${exIdx}].notes=this.value;saveState();">
+            <div class="sets-table">
+              <div class="sets-head"><span>#</span><span>Tipo</span><span>KG</span><span>RIP</span><span>RIR</span><span>RPE</span><span>✓</span></div>
+              ${exItem.sets.map((s, sIdx) => `
+                <div class="set-row ${s.done ? 'set-done' : ''} ${s.isPR ? 'set-pr-row' : ''}">
+                  <span class="set-num" onclick="removeSet(${exIdx},${sIdx})">${s.isPR ? '🏆' : (sIdx + 1)}</span>
+                  <select class="set-select type-${s.type}" onchange="updateSetField(${exIdx},${sIdx},'type',this.value)">
+                    <option value="N" ${s.type==='N'?'selected':''}>N</option>
+                    <option value="W" ${s.type==='W'?'selected':''}>W</option>
+                    <option value="D" ${s.type==='D'?'selected':''}>D</option>
+                    <option value="F" ${s.type==='F'?'selected':''}>F</option>
+                    <option value="RP" ${s.type==='RP'?'selected':''}>RP</option>
+                  </select>
+                  <input type="number" step="0.5" inputmode="decimal" class="set-input" placeholder="0" value="${s.weight}" onchange="updateSetField(${exIdx},${sIdx},'weight',this.value)">
+                  <input type="number" inputmode="numeric" class="set-input" placeholder="0" value="${s.reps}" onchange="updateSetField(${exIdx},${sIdx},'reps',this.value)">
+                  <input type="number" min="0" max="10" inputmode="numeric" class="set-input" placeholder="-" value="${s.rir}" onchange="updateSetField(${exIdx},${sIdx},'rir',this.value)">
+                  <input type="number" step="0.5" min="1" max="10" inputmode="decimal" class="set-input" placeholder="-" value="${s.rpe}" onchange="updateSetField(${exIdx},${sIdx},'rpe',this.value)">
+                  <input type="checkbox" class="set-check" ${s.done ? 'checked' : ''} onchange="updateSetField(${exIdx},${sIdx},'done',this.checked)">
+                </div>
+              `).join('')}
+            </div>
+            <div class="row-gap" style="margin-top:10px">
+              <button class="btn-outline btn-sm full-width" onclick="addSetToActive(${exIdx})">${t('add_set')}</button>
+              <button class="btn-outline btn-sm" onclick="copyLastSetValues(${exIdx})">${t('copy_prev')}</button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <label class="small muted" style="font-weight:700">${t('add_exercise')}</label>
+      <input type="search" id="quick-add-ex-search" class="input-field" style="margin-top:8px"
+        placeholder="🔍 ${t('search_ex')}" oninput="filterQuickAddExercises(this.value)">
+      <div id="quick-add-ex-results" class="searchable-ex-list">
+        ${renderQuickAddExerciseOptions('')}
+      </div>
+    </div>
+  `;
+}
+
+// ================= HOTFIX MODALI WARM-UP & PLATE CALCULATOR =================
+function computeWarmupSets(targetKg) {
+  const w = parseFloat(targetKg) || 20;
+  const round25 = (val) => Math.max(20, Math.round(val / 2.5) * 2.5);
+  if (w <= 25) return [{ weight: w, reps: 10, pct: '100%' }];
+  const plan = [
+    { weight: 20, reps: 10, pct: 'Bilanciere' },
+    { weight: round25(w * 0.50), reps: 6, pct: '50%' },
+    { weight: round25(w * 0.70), reps: 3, pct: '70%' },
+    { weight: round25(w * 0.85), reps: 1, pct: '85%' }
+  ];
+  const unique = [];
+  plan.forEach(p => { if (!unique.some(u => u.weight === p.weight)) unique.push(p); });
+  return unique;
+}
+
+function renderWarmupPreviewHTML(targetKg) {
+  return computeWarmupSets(targetKg).map((s, i) => `
+    <div class="warmup-preview-row">
+      <span><span class="type-W"><strong>W${i + 1}</strong></span> • ${s.pct}</span>
+      <span><strong>${s.weight} kg</strong> × ${s.reps} rip</span>
+    </div>
+  `).join('');
+}
+
+function updateWarmupPreview(val) {
+  const box = document.getElementById('wu-preview-box');
+  if (box) box.innerHTML = renderWarmupPreviewHTML(val);
+}
+
+function applyWarmupSets(exIndex) {
+  const input = document.getElementById('wu-target-input');
+  const targetVal = input ? input.value : 20;
+  const generated = computeWarmupSets(targetVal);
+  const newSets = generated.map(g => ({
+    type: 'W',
+    weight: String(g.weight),
+    reps: String(g.reps),
+    rir: '',
+    rpe: '',
+    done: false,
+    isPR: false
+  }));
+  state.activeWorkout.exercises[exIndex].sets = [...newSets, ...state.activeWorkout.exercises[exIndex].sets];
+  saveState();
+  closeModal();
+  renderWorkoutTab();
+}
+
+function openWarmupGeneratorModal(exIndex) {
+  const exItem = state.activeWorkout.exercises[exIndex];
+  const dbEx = getExercise(exItem.exerciseId);
+  const firstWorking = exItem.sets.find(s => s.type !== 'W' && parseFloat(s.weight) > 0);
+  const { bestWeight } = getBest1RMForExercise(exItem.exerciseId);
+  const defaultTarget = firstWorking ? parseFloat(firstWorking.weight) : (bestWeight || 60);
+
+  openModal(`
+    <div class="ex-log-header">
+      <div>
+        <span class="badge-orange">🔥 Warm-Up Automatico</span>
+        <h3 style="margin-top:4px">${dbEx.name[state.lang]}</h3>
+      </div>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <p class="small muted" style="margin:8px 0">Inserisci il carico della tua prima serie allenante (KG):</p>
+    <div class="row-gap" style="margin-bottom:12px">
+      <input type="number" step="2.5" id="wu-target-input" class="input-field mono" style="font-size:1.25rem;text-align:center" value="${defaultTarget}" oninput="updateWarmupPreview(this.value)">
+      <span class="mono">KG</span>
+    </div>
+    <div id="wu-preview-box">${renderWarmupPreviewHTML(defaultTarget)}</div>
+    <div class="row-gap" style="margin-top:14px">
+      <button class="btn-primary full-width" onclick="applyWarmupSets(${exIndex})">➕ Inserisci Serie di Avvicinamento</button>
+    </div>
+  `);
+}
+
+function renderPlatesHTML(w) {
+  const total = parseFloat(w) || 20;
+  if (total <= 20) {
+    return `<p class="muted small" style="text-align:center;padding:20px">Solo bilanciere olimpico (20 kg) senza dischi.</p>`;
+  }
+  let perSide = (total - 20) / 2;
+  const avail = [
+    { kg: 25, color: '#EF4444', h: 68 },
+    { kg: 20, color: '#3B82F6', h: 64 },
+    { kg: 15, color: '#EAB308', h: 58 },
+    { kg: 10, color: '#22C55E', h: 50 },
+    { kg: 5, color: '#F4F4F6', h: 42, darkText: true },
+    { kg: 2.5, color: '#71717A', h: 36 },
+    { kg: 1.25, color: '#52525B', h: 30 }
+  ];
+  const discs = [];
+  avail.forEach(p => {
+    while (perSide >= p.kg - 0.001) {
+      discs.push(p);
+      perSide -= p.kg;
+    }
+  });
+  return `
+    <div class="plate-bar-visual">
+      <div class="bar-shaft"></div>
+      ${discs.map(d => `<div class="plate-disc" style="background:${d.color};height:${d.h}px;width:22px;${d.darkText ? 'color:#000' : ''}">${d.kg}</div>`).join('')}
+    </div>
+    <p class="small" style="text-align:center"><strong>Per lato:</strong> ${discs.map(d => d.kg + 'kg').join(' + ') || '0kg'} ${perSide > 0.1 ? `(resto ${perSide.toFixed(2)}kg)` : ''}</p>
+  `;
+}
+
+function updatePlateCalculatorView(val) {
+  const area = document.getElementById('plate-render-area');
+  if (area) area.innerHTML = renderPlatesHTML(val);
+}
+
+function openPlateCalculatorModal(initialWeight = 60) {
+  const startKg = initialWeight || 60;
+  openModal(`
+    <div class="ex-log-header">
+      <h3>🏋️ Plate Calculator (Bilanciere 20kg)</h3>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div class="row-gap" style="margin-top:12px">
+      <input type="number" step="2.5" id="plate-target-kg" class="input-field mono" style="font-size:1.2rem;text-align:center" value="${startKg}" oninput="updatePlateCalculatorView(this.value)">
+      <span class="mono">KG</span>
+    </div>
+    <div id="plate-render-area">${renderPlatesHTML(startKg)}</div>
+  `);
+}
 
