@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#09090B">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>APEX IRON v4.2 — Pro Strength & Calisthenics</title>
+  <title>APEX IRON v4.3 — Pro Strength & Calisthenics</title>
   <link id="pwa-manifest" rel="manifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -84,9 +84,10 @@
     .btn-primary { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 0.88rem; transition: opacity 0.15s; }
     .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
     .btn-outline { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 0.84rem; }
+    .btn-danger { background: rgba(239, 68, 68, 0.16); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 9px 14px; font-weight: 700; cursor: pointer; font-size: 0.84rem; }
     .btn-danger-ghost { background: transparent; color: var(--red); border: none; font-weight: 600; cursor: pointer; padding: 6px 10px; font-size: 0.84rem; }
     .btn-icon { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 9px; padding: 6px 9px; cursor: pointer; font-size: 0.86rem; }
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+    .btn-sm { padding: 6px 11px; font-size: 0.78rem; }
     .input-field { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; outline: none; }
     .input-field:focus { border-color: var(--orange); }
 
@@ -109,7 +110,7 @@
     .bw-drum::-webkit-scrollbar { display: none; }
     .bw-drum-item { height: 54px; line-height: 54px; scroll-snap-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.15rem; color: var(--orange); }
 
-    /* WORKOUT LOGGER */
+    /* WORKOUT LOGGER & EDITOR */
     .workout-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
     .ex-log-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .prev-ghost { font-size: 0.78rem; color: var(--orange); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
@@ -141,11 +142,17 @@
     .tech-diagram-box { background: #0E0E12; border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin: 10px 0; display: flex; align-items: center; justify-content: center; }
     .alt-box { background: var(--surface-2); padding: 8px 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--orange); }
 
-    /* HISTORY CARDS & CALENDAR */
-    .history-card { border-left: 3px solid var(--orange); cursor: pointer; }
-    .history-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: var(--surface-2); padding: 8px 10px; border-radius: 10px; margin: 10px 0; text-align: center; }
-    .history-details-drawer { border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px; display: none; }
+    /* HISTORY CARDS & SINGLE WORKOUT ANALYTICS */
+    .history-card { border-left: 3px solid var(--orange); }
+    .history-time-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); background: var(--surface-2); padding: 3px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+    .history-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: var(--surface-2); padding: 9px 8px; border-radius: 10px; margin: 10px 0; text-align: center; }
+    .history-details-drawer { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; display: none; }
     .history-card.expanded .history-details-drawer { display: block; }
+    .workout-mini-analytics { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .routine-ex-preview { list-style: none; margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: grid; gap: 4px; }
+    .builder-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
+
+    /* CALENDAR & CHARTS */
     .suggestion-box { background: var(--orange-glow); border: 1px solid rgba(255,85,0,0.4); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.84rem; margin-top: 10px; }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
     .cal-day { background: var(--surface-2); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; min-height: 42px; }
@@ -158,9 +165,9 @@
     .progress-fill { height: 100%; border-radius: 99px; }
 
     /* CUSTOM MODAL / BOTTOM SHEET */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
-    .modal-sheet { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; padding: 20px; animation: slideUp 0.2s ease-out; }
+    .modal-sheet { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 680px; max-height: 88vh; overflow-y: auto; padding: 20px; animation: slideUp 0.2s ease-out; }
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     /* AI COACH & REPORTS */
@@ -199,9 +206,9 @@
 </head>
 <body>
 
-  <!-- TOP BAR MINIMAL -->
+  <!-- TOP BAR PULITA -->
   <header class="top-bar">
-    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.2</span></div>
+    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.3</span></div>
     <div class="row-gap">
       <button class="btn-icon small" id="sync-status-btn" onclick="state.analyticsSubTab='calendar';switchTab('analytics')" title="Cloud Sync">☁️</button>
       <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
@@ -239,7 +246,7 @@
     // ================= MANIFEST PWA DINAMICO =================
     (function setupManifest() {
       const manifest = {
-        name: "APEX IRON v4.2 — Pro Gym & Calisthenics Tracker",
+        name: "APEX IRON v4.3 — Pro Gym & Calisthenics Tracker",
         short_name: "APEX IRON",
         start_url: location.href,
         display: "standalone",
@@ -467,7 +474,8 @@
       calendarMonthOffset: 0,
       chatMessages: [],
       latestReport: localStorage.getItem('apex_latest_report') || '',
-      pendingAiRoutine: null
+      editingHistoryIndex: null,
+      editingWorkoutDraft: null
     };
 
     function getAllExercises() {
@@ -478,7 +486,47 @@
       return getAllExercises().find(e => e.id === id) || { id, category: 'bodybuilding', primary: 'chest', secondary: [], name: { it: id, en: id }, exec: { it: '', en: '' }, alt: { it: '', en: '' } };
     }
 
-    // ================= CLOUD SYNC FIREBASE CON MERGE INTELLIGENTE =================
+    // ================= RICALCOLO AUTOMATICO STATISTICHE & PR SU TUTTO LO STORICO =================
+    function recalculateEntireHistoryStats() {
+      // Ordina cronologicamente lo storico per ricalcolare in modo esatto i PR progressivi
+      state.history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const runningBest1RM = {};
+
+      state.history.forEach(w => {
+        let totalVolume = 0, prCount = 0;
+        if (!w.startTime) w.startTime = new Date(w.date).getTime() - ((w.durationMin || 45) * 60000);
+        if (!w.endTime) w.endTime = new Date(w.date).getTime();
+        w.durationMin = Math.max(1, Math.round((w.endTime - w.startTime) / 60000));
+
+        (w.exercises || []).forEach(ex => {
+          const prevBest = runningBest1RM[ex.exerciseId] || 0;
+          let sessionBest = prevBest;
+
+          (ex.sets || []).forEach(s => {
+            s.isPR = false;
+            if (s.done) {
+              const kg = parseFloat(s.weight) || 0;
+              const reps = parseInt(s.reps) || 0;
+              totalVolume += kg * reps;
+              if (kg > 0 && reps > 0 && s.type !== 'W') {
+                const est1RM = kg * (1 + reps / 30);
+                if (est1RM > sessionBest) {
+                  s.isPR = true;
+                  prCount++;
+                  sessionBest = est1RM;
+                }
+              }
+            }
+          });
+          runningBest1RM[ex.exerciseId] = sessionBest;
+        });
+
+        w.totalVolume = Math.round(totalVolume * 10) / 10;
+        w.prCount = prCount;
+      });
+    }
+
+    // ================= CLOUD SYNC FIREBASE =================
     let syncEventSource = null;
 
     function updateSyncIcon(status) {
@@ -533,9 +581,10 @@
           if (remote.bodyweight) state.bodyweight = remote.bodyweight;
           if (remote.customExercises) state.customExercises = mergeById(state.customExercises, remote.customExercises);
           if (remote.routines) state.routines = forceOverwrite ? remote.routines : mergeById(state.routines, remote.routines);
-          if (remote.history) state.history = forceOverwrite ? remote.history : mergeById(state.history, remote.history);
+          if ('history' in remote) state.history = remote.history || [];
           if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
           state.lastUpdated = remote.lastUpdated || Date.now();
+          recalculateEntireHistoryStats();
           persistLocalOnly();
           renderCurrentView();
         } else if (!remote && state.history.length > 0) {
@@ -558,9 +607,10 @@
             if (remote.bodyweight) state.bodyweight = remote.bodyweight;
             if (remote.customExercises) state.customExercises = mergeById(state.customExercises, remote.customExercises);
             if (remote.routines) state.routines = mergeById(state.routines, remote.routines);
-            if (remote.history) state.history = mergeById(state.history, remote.history);
+            if ('history' in remote) state.history = remote.history || [];
             if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
             state.lastUpdated = remote.lastUpdated;
+            recalculateEntireHistoryStats();
             persistLocalOnly();
             renderCurrentView();
             updateSyncIcon('synced');
@@ -617,10 +667,7 @@
         ];
         const discs = [];
         avail.forEach(p => {
-          while (perSide >= p.kg - 0.001) {
-            discs.push(p);
-            perSide -= p.kg;
-          }
+          while (perSide >= p.kg - 0.001) { discs.push(p); perSide -= p.kg; }
         });
         return `
           <div class="plate-bar-visual">
@@ -645,7 +692,7 @@
       `);
     }
 
-    // ================= TIMER DI RECUPERO (CONTESTUALE AL WORKOUT) =================
+    // ================= TIMER DI RECUPERO =================
     function playBeep() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -800,7 +847,6 @@
     function copyLastSetValues(exIndex) {
       const ex = state.activeWorkout.exercises[exIndex];
       if (!ex.sets.length) return;
-      // Trova l'ultima serie compilata oppure l'ultimo storico
       let refW = '', refR = '';
       for (let i = ex.sets.length - 1; i >= 0; i--) {
         if (ex.sets[i].weight || ex.sets[i].reps) { refW = ex.sets[i].weight; refR = ex.sets[i].reps; break; }
@@ -849,23 +895,25 @@
 
     function finishWorkout() {
       if (!state.activeWorkout) return;
-      const durationMin = Math.max(1, Math.round((Date.now() - state.activeWorkout.startTime) / 60000));
-      let totalVolume = 0, prCount = 0;
-      state.activeWorkout.exercises.forEach(ex => ex.sets.forEach(s => {
-        if (s.done) {
-          totalVolume += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
-          if (s.isPR) prCount++;
-        }
-      }));
-      state.history.push({ ...state.activeWorkout, date: new Date().toISOString(), durationMin, totalVolume, prCount });
+      const endTime = Date.now();
+      const startTime = state.activeWorkout.startTime || (endTime - 45 * 60000);
+      const durationMin = Math.max(1, Math.round((endTime - startTime) / 60000));
+      state.history.push({
+        ...state.activeWorkout,
+        startTime,
+        endTime,
+        date: new Date(endTime).toISOString(),
+        durationMin
+      });
       state.activeWorkout = null;
       clearInterval(state.timer.interval); state.timer.running = false;
+      recalculateEntireHistoryStats();
       saveState();
       state.analyticsSubTab = 'history';
       switchTab('analytics');
     }
 
-    // ================= CALCOLI MUSCOLARI & RECUPERO =================
+    // ================= CALCOLI MUSCOLARI (PERIODO E SINGOLO WORKOUT) =================
     function calculateMuscleStats(daysBack = 7) {
       const cutoff = Date.now() - daysBack * 86400000;
       const stats = {};
@@ -892,6 +940,25 @@
         }
       });
       return stats;
+    }
+
+    function calculateSingleWorkoutMuscles(workout) {
+      const map = {};
+      (workout.exercises || []).forEach(exItem => {
+        const dbEx = getExercise(exItem.exerciseId);
+        const workingSets = (exItem.sets || []).filter(s => s.done && s.type !== 'W').length;
+        const fallbackSets = (exItem.sets || []).filter(s => s.done).length;
+        const count = workingSets > 0 ? workingSets : fallbackSets;
+        if (count > 0 && dbEx.primary && dbEx.primary !== 'mobility') {
+          map[dbEx.primary] = (map[dbEx.primary] || 0) + count;
+          (dbEx.secondary || []).forEach(sec => {
+            if (sec !== 'mobility') map[sec] = (map[sec] || 0) + count * 0.5;
+          });
+        }
+      });
+      return Object.keys(map)
+        .map(k => ({ key: k, label: MUSCLE_GROUPS[k][state.lang], sets: map[k], color: MUSCLE_GROUPS[k].color }))
+        .sort((a, b) => b.sets - a.sets);
     }
 
     function getSuggestedNextWorkout() {
@@ -993,7 +1060,6 @@
         return;
       }
 
-      // Calcolo live tonnellaggio, serie completate e durata seduta
       let liveVol = 0, liveSets = 0;
       state.activeWorkout.exercises.forEach(ex => ex.sets.forEach(s => {
         if (s.done) { liveSets++; liveVol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0); }
@@ -1279,7 +1345,7 @@
       `);
     }
 
-    // --- TAB 4: ANALISI ---
+    // --- TAB 4: ANALISI (MUSCOLI, STORICO MODIFICABILE CON GRAFICI SINGOLA SEDUTA, CALENDARIO) ---
     function renderAnalyticsTab() {
       const container = document.getElementById('main-content');
       container.innerHTML = `
@@ -1461,6 +1527,232 @@
       }, 180);
     }
 
+    // ================= STORICO CRONOLOGICO CON GRAFICI PER SINGOLA SEDUTA, ELIMINAZIONE & MODIFICA =================
+    function formatClockTime(timestampMs) {
+      if (!timestampMs) return '--:--';
+      return new Date(timestampMs).toLocaleTimeString(state.lang === 'it' ? 'it-IT' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function toLocalInputDate(timestampMs) {
+      const d = new Date(timestampMs || Date.now());
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function toLocalInputTime(timestampMs) {
+      const d = new Date(timestampMs || Date.now());
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function confirmDeleteHistoryWorkout(origIdx) {
+      const w = state.history[origIdx];
+      if (!w) return;
+      openModal(`
+        <div class="ex-log-header">
+          <h3>🗑️ Elimina Allenamento</h3>
+          <button class="btn-icon" onclick="closeModal()">✕</button>
+        </div>
+        <p class="small" style="margin:12px 0">Sei sicuro di voler eliminare definitivamente <strong>${w.name}</strong>? Tutte le statistiche muscolari, i record personali (PR) e i ranking verranno ricalcolati in automatico.</p>
+        <div class="row-gap">
+          <button class="btn-danger full-width" onclick="executeDeleteHistoryWorkout(${origIdx})">Elimina Definitivamente</button>
+          <button class="btn-outline" onclick="closeModal()">Annulla</button>
+        </div>
+      `);
+    }
+
+    function executeDeleteHistoryWorkout(origIdx) {
+      state.history.splice(origIdx, 1);
+      recalculateEntireHistoryStats();
+      saveState();
+      closeModal();
+      renderAnalyticsTab();
+    }
+
+    function openEditHistoryModal(origIdx) {
+      const w = state.history[origIdx];
+      if (!w) return;
+      state.editingHistoryIndex = origIdx;
+      state.editingWorkoutDraft = JSON.parse(JSON.stringify(w));
+      if (!state.editingWorkoutDraft.startTime) {
+        state.editingWorkoutDraft.startTime = new Date(w.date).getTime() - ((w.durationMin || 45) * 60000);
+      }
+      if (!state.editingWorkoutDraft.endTime) {
+        state.editingWorkoutDraft.endTime = new Date(w.date).getTime();
+      }
+      renderEditHistoryModalBody();
+    }
+
+    function renderEditHistoryModalBody() {
+      const draft = state.editingWorkoutDraft;
+      if (!draft) return;
+
+      const dateVal = toLocalInputDate(draft.startTime);
+      const startTimeVal = toLocalInputTime(draft.startTime);
+      const endTimeVal = toLocalInputTime(draft.endTime);
+
+      openModal(`
+        <div class="ex-log-header" style="margin-bottom:10px">
+          <h3>✏️ Modifica Allenamento</h3>
+          <button class="btn-icon" onclick="closeModal()">✕</button>
+        </div>
+
+        <div style="display:grid;gap:8px;margin-bottom:14px">
+          <label class="small muted">Nome Scheda / Sessione</label>
+          <input type="text" class="input-field" value="${draft.name}" onchange="state.editingWorkoutDraft.name=this.value">
+
+          <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px">
+            <div>
+              <label class="small muted">Data</label>
+              <input type="date" id="edit-w-date" class="input-field" value="${dateVal}">
+            </div>
+            <div>
+              <label class="small muted">Ora Inizio</label>
+              <input type="time" id="edit-w-start" class="input-field mono" value="${startTimeVal}">
+            </div>
+            <div>
+              <label class="small muted">Ora Fine</label>
+              <input type="time" id="edit-w-end" class="input-field mono" value="${endTimeVal}">
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:10px">
+          ${draft.exercises.map((exItem, exIdx) => {
+            const dbEx = getExercise(exItem.exerciseId);
+            return `
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px">
+                <div class="ex-log-header">
+                  <strong class="small">${dbEx.name[state.lang]}</strong>
+                  <button class="btn-danger-ghost btn-sm" onclick="state.editingWorkoutDraft.exercises.splice(${exIdx},1);renderEditHistoryModalBody();">🗑️ Rimuovi</button>
+                </div>
+                <input type="text" class="notes-input" placeholder="Note esercizio..." value="${exItem.notes || ''}"
+                  onchange="state.editingWorkoutDraft.exercises[${exIdx}].notes=this.value">
+                <div class="sets-head"><span>#</span><span>Tipo</span><span>KG</span><span>RIP</span><span>RIR</span><span>RPE</span><span>✓</span></div>
+                ${exItem.sets.map((s, sIdx) => `
+                  <div class="set-row ${s.done ? 'set-done' : ''}">
+                    <span class="set-num" onclick="state.editingWorkoutDraft.exercises[${exIdx}].sets.splice(${sIdx},1);renderEditHistoryModalBody();">${sIdx + 1}</span>
+                    <select class="set-select type-${s.type}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].type=this.value">
+                      <option value="N" ${s.type==='N'?'selected':''}>N</option>
+                      <option value="W" ${s.type==='W'?'selected':''}>W</option>
+                      <option value="D" ${s.type==='D'?'selected':''}>D</option>
+                      <option value="F" ${s.type==='F'?'selected':''}>F</option>
+                      <option value="RP" ${s.type==='RP'?'selected':''}>RP</option>
+                    </select>
+                    <input type="number" step="0.5" class="set-input" value="${s.weight}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].weight=this.value">
+                    <input type="number" class="set-input" value="${s.reps}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].reps=this.value">
+                    <input type="number" class="set-input" value="${s.rir}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].rir=this.value">
+                    <input type="number" step="0.5" class="set-input" value="${s.rpe}" onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].rpe=this.value">
+                    <input type="checkbox" class="set-check" ${s.done ? 'checked' : ''} onchange="state.editingWorkoutDraft.exercises[${exIdx}].sets[${sIdx}].done=this.checked;renderEditHistoryModalBody();">
+                  </div>
+                `).join('')}
+                <button class="btn-outline btn-sm full-width" style="margin-top:8px" onclick="
+                  const last = state.editingWorkoutDraft.exercises[${exIdx}].sets.slice(-1)[0] || {type:'N',weight:'',reps:'',rir:'2',rpe:'8',done:true};
+                  state.editingWorkoutDraft.exercises[${exIdx}].sets.push({...last, done:true});
+                  renderEditHistoryModalBody();
+                ">+ Aggiungi Serie</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="row-gap" style="margin-top:12px">
+          <select id="edit-add-ex-sel" class="input-field">
+            ${getAllExercises().map(e => `<option value="${e.id}">${e.name[state.lang]}</option>`).join('')}
+          </select>
+          <button class="btn-outline" onclick="
+            const sel = document.getElementById('edit-add-ex-sel').value;
+            state.editingWorkoutDraft.exercises.push({exerciseId:sel, notes:'', sets:[{type:'N',weight:'',reps:'',rir:'2',rpe:'8',done:true}]});
+            renderEditHistoryModalBody();
+          ">+ Esercizio</button>
+        </div>
+
+        <div class="row-gap" style="margin-top:16px">
+          <button class="btn-primary full-width" onclick="saveEditedHistoryWorkout()">💾 Salva Modifiche & Ricalcola</button>
+          <button class="btn-outline" onclick="closeModal()">Annulla</button>
+        </div>
+      `);
+    }
+
+    function saveEditedHistoryWorkout() {
+      const draft = state.editingWorkoutDraft;
+      const idx = state.editingHistoryIndex;
+      if (!draft || idx === null) return;
+
+      const dateStr = document.getElementById('edit-w-date').value;
+      const startStr = document.getElementById('edit-w-start').value || '10:00';
+      const endStr = document.getElementById('edit-w-end').value || '11:00';
+
+      const startMs = new Date(`${dateStr}T${startStr}:00`).getTime();
+      let endMs = new Date(`${dateStr}T${endStr}:00`).getTime();
+      if (endMs <= startMs) endMs = startMs + 30 * 60000;
+
+      draft.startTime = startMs;
+      draft.endTime = endMs;
+      draft.date = new Date(endMs).toISOString();
+
+      state.history[idx] = draft;
+      recalculateEntireHistoryStats();
+      saveState();
+      closeModal();
+      renderAnalyticsTab();
+    }
+
+    function renderSingleWorkoutAnalyticsHTML(w) {
+      const mList = calculateSingleWorkoutMuscles(w);
+      const totalMuscleSets = mList.reduce((acc, m) => acc + m.sets, 0);
+
+      // Calcolo volume per esercizio per barre comparative
+      const exVols = (w.exercises || []).map(ex => {
+        let vol = 0, setsDone = 0;
+        (ex.sets || []).forEach(s => {
+          if (s.done) { setsDone++; vol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0); }
+        });
+        return { name: getExercise(ex.exerciseId).name[state.lang], vol: Math.round(vol), setsDone };
+      }).filter(x => x.setsDone > 0);
+      const maxExVol = Math.max(...exVols.map(x => x.vol), 1);
+
+      let cumPct = 0;
+      const donutSlices = mList.map(m => {
+        const pct = (m.sets / Math.max(1, totalMuscleSets)) * 100;
+        const circle = `<circle r="15.915" cx="21" cy="21" fill="transparent" stroke="${m.color}" stroke-width="5.5"
+          stroke-dasharray="${pct} ${100 - pct}" stroke-dashoffset="${25 - cumPct}"></circle>`;
+        cumPct += pct;
+        return circle;
+      }).join('');
+
+      return `
+        <div class="workout-mini-analytics">
+          <div class="small" style="font-weight:700;margin-bottom:8px;color:var(--orange)">📊 Analisi Muscolare & Carichi della Seduta</div>
+          ${totalMuscleSets > 0 ? `
+            <div class="donut-wrapper" style="justify-content:flex-start;margin-bottom:10px">
+              <svg width="104" height="104" viewBox="0 0 42 42">
+                <circle r="15.915" cx="21" cy="21" fill="transparent" stroke="#23232B" stroke-width="5.5"></circle>
+                ${donutSlices}
+                <text x="21" y="20" fill="#F4F4F6" font-size="5.5" font-weight="800" text-anchor="middle">${totalMuscleSets}</text>
+                <text x="21" y="25" fill="#8E8E9E" font-size="3" text-anchor="middle">SERIE EFF.</text>
+              </svg>
+              <div class="legend-list">
+                ${mList.map(m => `
+                  <div><span class="legend-dot" style="background:${m.color}"></span><strong>${m.label}</strong>: ${Math.round((m.sets / totalMuscleSets) * 100)}% (${m.sets} serie)</div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div style="display:grid;gap:6px;margin-top:8px">
+            ${exVols.map(ev => `
+              <div>
+                <div class="ex-log-header small">
+                  <span>${ev.name}</span>
+                  <span class="mono muted">${ev.vol} kg (${ev.setsDone} serie)</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width:${Math.round((ev.vol / maxExVol) * 100)}%;background:var(--orange)"></div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     function renderHistorySubtab() {
       const box = document.getElementById('analytics-sub-content');
       if (!state.history.length) {
@@ -1469,40 +1761,57 @@
       }
       const reversed = [...state.history].map((w, origIdx) => ({ ...w, origIdx })).reverse();
       box.innerHTML = `
-        <h3 class="section-title">${t('history_title')} (${state.history.length}) — Tocca per espandere</h3>
+        <h3 class="section-title">${t('history_title')} (${state.history.length}) — Tocca una scheda per grafici e dettagli</h3>
         ${reversed.map(w => {
           const dateStr = new Date(w.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+          const startStr = formatClockTime(w.startTime || (new Date(w.date).getTime() - ((w.durationMin || 45) * 60000)));
+          const endStr = formatClockTime(w.endTime || new Date(w.date).getTime());
           const totalSets = w.exercises.reduce((acc, e) => acc + e.sets.filter(s => s.done).length, 0);
+          const exCount = w.exercises.filter(e => e.sets.some(s => s.done)).length;
+
           return `
             <div class="card history-card" onclick="this.classList.toggle('expanded')">
               <div class="ex-log-header">
                 <div>
-                  <div class="card-title">${w.name}</div>
-                  <div class="small muted">${dateStr}</div>
+                  <div class="row-gap" style="flex-wrap:wrap">
+                    <span class="card-title">${w.name}</span>
+                    ${w.prCount > 0 ? `<span class="badge-gold">🏆 ${w.prCount} PR</span>` : ''}
+                  </div>
+                  <div class="history-time-pill">📅 ${dateStr} • 🕒 ${startStr} → ${endStr}</div>
                 </div>
-                <div class="row-gap">
-                  ${w.prCount > 0 ? `<span class="badge-gold">🏆 ${w.prCount} PR</span>` : ''}
-                  <button class="btn-outline btn-sm" onclick="event.stopPropagation();repeatPastWorkout(${w.origIdx})">🔄 Ripeti</button>
+                <div class="row-gap" onclick="event.stopPropagation()">
+                  <button class="btn-icon" onclick="repeatPastWorkout(${w.origIdx})" title="Ripeti">🔄</button>
+                  <button class="btn-icon" onclick="openEditHistoryModal(${w.origIdx})" title="Modifica">✏️</button>
+                  <button class="btn-icon" style="color:var(--red)" onclick="confirmDeleteHistoryWorkout(${w.origIdx})" title="Elimina">🗑️</button>
                 </div>
               </div>
+
               <div class="history-metrics">
                 <div><div class="small muted">Volume</div><div class="mono"><strong>${Math.round(w.totalVolume || 0)} kg</strong></div></div>
                 <div><div class="small muted">Serie</div><div class="mono"><strong>${totalSets}</strong></div></div>
                 <div><div class="small muted">Durata</div><div class="mono"><strong>${w.durationMin || 45} min</strong></div></div>
+                <div><div class="small muted">Esercizi</div><div class="mono"><strong>${exCount}</strong></div></div>
               </div>
+
               <div class="small muted">
                 ${w.exercises.map(e => {
                   const doneSets = e.sets.filter(s => s.done);
                   if (!doneSets.length) return '';
                   const topSet = doneSets.reduce((best, cur) => ((parseFloat(cur.weight)||0) > (parseFloat(best.weight)||0) ? cur : best), doneSets[0]);
-                  return `<div>• <strong>${getExercise(e.exerciseId).name[state.lang]}</strong>: ${doneSets.length} serie (Top: ${topSet.weight||0}kg × ${topSet.reps||0})</div>`;
+                  const hasPR = doneSets.some(s => s.isPR);
+                  return `<div>• <strong>${getExercise(e.exerciseId).name[state.lang]}</strong>: ${doneSets.length} serie (Top: ${topSet.weight||0}kg × ${topSet.reps||0}) ${hasPR ? '🏆' : ''}</div>`;
                 }).join('')}
               </div>
-              <div class="history-details-drawer small">
+
+              <!-- DETTAGLIO ESPANDIBILE CON GRAFICI MUSCOLARI DELLA SEDUTA & LOG COMPLETO -->
+              <div class="history-details-drawer" onclick="event.stopPropagation()">
+                ${renderSingleWorkoutAnalyticsHTML(w)}
+                <div class="small" style="font-weight:700;margin-bottom:6px">📋 Log Completo Serie</div>
                 ${w.exercises.map(e => `
-                  <div style="margin-bottom:8px">
-                    <strong>${getExercise(e.exerciseId).name[state.lang]}</strong>
-                    <div class="mono muted">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'})`).join(' • ')}</div>
+                  <div style="margin-bottom:8px;background:var(--surface-2);padding:8px 10px;border-radius:8px">
+                    <div class="small"><strong>${getExercise(e.exerciseId).name[state.lang]}</strong></div>
+                    ${e.notes ? `<div class="small muted" style="font-style:italic">"${e.notes}"</div>` : ''}
+                    <div class="mono small muted" style="margin-top:4px">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}[${s.type}]: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'}, RPE ${s.rpe||'-'}) ${s.isPR?'🏆':''}`).join('<br>')}</div>
                   </div>
                 `).join('')}
               </div>
@@ -1612,6 +1921,7 @@
           if (parsed.customExercises) state.customExercises = parsed.customExercises;
           if (parsed.routines) state.routines = parsed.routines;
           if (parsed.history) state.history = parsed.history;
+          recalculateEntireHistoryStats();
           saveState(); renderAnalyticsTab();
         } catch (err) {}
       };
@@ -1655,7 +1965,7 @@
           <button class="btn-icon" onclick="closeModal()">✕</button>
         </div>
         <p class="small muted" style="margin:6px 0 12px">Descrivi l'obiettivo della scheda: l'AI selezionerà gli esercizi dal database e la salverà nelle tue Schede.</p>
-        <input type="text" id="ai-routine-goal" class="input-field" placeholder="Es. Push fokus petto alto e deltoide laterale (5 esercizi)">
+        <input type="text" id="ai-routine-goal" class="input-field" placeholder="Es. Push focus petto alto e deltoide laterale (5 esercizi)">
         <button class="btn-primary full-width" style="margin-top:12px" onclick="generateAiRoutine()">Genera & Salva Scheda</button>
       `);
     }
@@ -1669,7 +1979,7 @@
       const availableIds = getAllExercises().map(e => `${e.id} (${e.name.it})`).join(', ');
       const prompt = `Crea una scheda di allenamento per: "${goal}".
 Scegli SOLO tra questi ID esercizi esatti: ${availableIds}.
-Rispondi EXCLUSIVAMENTE con un oggetto JSON valido senza markdown, in questo formato:
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido senza markdown, in questo formato:
 {"name": "Nome Scheda", "exercises": ["id_1", "id_2", "id_3", "id_4", "id_5"]}`;
 
       const raw = await callGeminiEngine(prompt, '');
@@ -1786,6 +2096,7 @@ Struttura il report in 3 punti brevi: 1) Valutazione Aderenza & Volume, 2) Squil
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      recalculateEntireHistoryStats();
       updateStaticLabels();
       renderCurrentView();
       startRealtimeSyncListener();
