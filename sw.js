@@ -1,7 +1,10 @@
-const CACHE_NAME = 'apex-iron-auto-cache';
+const CACHE_NAME = 'apex-iron-modular-v4.5';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './style.css',
+  './data.js',
+  './app.js',
   './manifest.json'
 ];
 
@@ -27,8 +30,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // NETWORK-FIRST per le pagine HTML / navigazione: prende sempre l'ultima versione da GitHub
-  if (event.request.mode === 'navigate' || url.endsWith('index.html') || url.endsWith('/')) {
+  // NETWORK-FIRST per HTML, JS e CSS dell'app: scarica sempre l'ultima versione da GitHub se online
+  const isAppCode = event.request.mode === 'navigate' ||
+    url.endsWith('index.html') ||
+    url.endsWith('style.css') ||
+    url.endsWith('data.js') ||
+    url.endsWith('app.js') ||
+    url.endsWith('/');
+
+  if (isAppCode) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
@@ -43,7 +53,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // CACHE-FIRST per asset statici (font, icone, manifest) per velocità istantanea
+  // CACHE-FIRST per asset esterni statici (Google Fonts, icone, manifest)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       return cached || fetch(event.request).then((networkResponse) => {
