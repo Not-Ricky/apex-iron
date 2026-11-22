@@ -2195,3 +2195,130 @@ window.addEventListener('DOMContentLoaded', () => {
   startRealtimeSyncListener();
 });
 
+// ================= HOTFIX MODALI WARM-UP & PLATE CALCULATOR =================
+function computeWarmupSets(targetKg) {
+  const w = parseFloat(targetKg) || 20;
+  const round25 = (val) => Math.max(20, Math.round(val / 2.5) * 2.5);
+  if (w <= 25) return [{ weight: w, reps: 10, pct: '100%' }];
+  const plan = [
+    { weight: 20, reps: 10, pct: 'Bilanciere' },
+    { weight: round25(w * 0.50), reps: 6, pct: '50%' },
+    { weight: round25(w * 0.70), reps: 3, pct: '70%' },
+    { weight: round25(w * 0.85), reps: 1, pct: '85%' }
+  ];
+  const unique = [];
+  plan.forEach(p => { if (!unique.some(u => u.weight === p.weight)) unique.push(p); });
+  return unique;
+}
+
+function renderWarmupPreviewHTML(targetKg) {
+  return computeWarmupSets(targetKg).map((s, i) => `
+    <div class="warmup-preview-row">
+      <span><span class="type-W"><strong>W${i + 1}</strong></span> • ${s.pct}</span>
+      <span><strong>${s.weight} kg</strong> × ${s.reps} rip</span>
+    </div>
+  `).join('');
+}
+
+function updateWarmupPreview(val) {
+  const box = document.getElementById('wu-preview-box');
+  if (box) box.innerHTML = renderWarmupPreviewHTML(val);
+}
+
+function applyWarmupSets(exIndex) {
+  const input = document.getElementById('wu-target-input');
+  const targetVal = input ? input.value : 20;
+  const generated = computeWarmupSets(targetVal);
+  const newSets = generated.map(g => ({
+    type: 'W',
+    weight: String(g.weight),
+    reps: String(g.reps),
+    rir: '',
+    rpe: '',
+    done: false,
+    isPR: false
+  }));
+  state.activeWorkout.exercises[exIndex].sets = [...newSets, ...state.activeWorkout.exercises[exIndex].sets];
+  saveState();
+  closeModal();
+  renderWorkoutTab();
+}
+
+function openWarmupGeneratorModal(exIndex) {
+  const exItem = state.activeWorkout.exercises[exIndex];
+  const dbEx = getExercise(exItem.exerciseId);
+  const firstWorking = exItem.sets.find(s => s.type !== 'W' && parseFloat(s.weight) > 0);
+  const { bestWeight } = getBest1RMForExercise(exItem.exerciseId);
+  const defaultTarget = firstWorking ? parseFloat(firstWorking.weight) : (bestWeight || 60);
+
+  openModal(`
+    <div class="ex-log-header">
+      <div>
+        <span class="badge-orange">🔥 Warm-Up Automatico</span>
+        <h3 style="margin-top:4px">${dbEx.name[state.lang]}</h3>
+      </div>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <p class="small muted" style="margin:8px 0">Inserisci il carico della tua prima serie allenante (KG):</p>
+    <div class="row-gap" style="margin-bottom:12px">
+      <input type="number" step="2.5" id="wu-target-input" class="input-field mono" style="font-size:1.25rem;text-align:center" value="${defaultTarget}" oninput="updateWarmupPreview(this.value)">
+      <span class="mono">KG</span>
+    </div>
+    <div id="wu-preview-box">${renderWarmupPreviewHTML(defaultTarget)}</div>
+    <div class="row-gap" style="margin-top:14px">
+      <button class="btn-primary full-width" onclick="applyWarmupSets(${exIndex})">➕ Inserisci Serie di Avvicinamento</button>
+    </div>
+  `);
+}
+
+function renderPlatesHTML(w) {
+  const total = parseFloat(w) || 20;
+  if (total <= 20) {
+    return `<p class="muted small" style="text-align:center;padding:20px">Solo bilanciere olimpico (20 kg) senza dischi.</p>`;
+  }
+  let perSide = (total - 20) / 2;
+  const avail = [
+    { kg: 25, color: '#EF4444', h: 68 },
+    { kg: 20, color: '#3B82F6', h: 64 },
+    { kg: 15, color: '#EAB308', h: 58 },
+    { kg: 10, color: '#22C55E', h: 50 },
+    { kg: 5, color: '#F4F4F6', h: 42, darkText: true },
+    { kg: 2.5, color: '#71717A', h: 36 },
+    { kg: 1.25, color: '#52525B', h: 30 }
+  ];
+  const discs = [];
+  avail.forEach(p => {
+    while (perSide >= p.kg - 0.001) {
+      discs.push(p);
+      perSide -= p.kg;
+    }
+  });
+  return `
+    <div class="plate-bar-visual">
+      <div class="bar-shaft"></div>
+      ${discs.map(d => `<div class="plate-disc" style="background:${d.color};height:${d.h}px;width:22px;${d.darkText ? 'color:#000' : ''}">${d.kg}</div>`).join('')}
+    </div>
+    <p class="small" style="text-align:center"><strong>Per lato:</strong> ${discs.map(d => d.kg + 'kg').join(' + ') || '0kg'} ${perSide > 0.1 ? `(resto ${perSide.toFixed(2)}kg)` : ''}</p>
+  `;
+}
+
+function updatePlateCalculatorView(val) {
+  const area = document.getElementById('plate-render-area');
+  if (area) area.innerHTML = renderPlatesHTML(val);
+}
+
+function openPlateCalculatorModal(initialWeight = 60) {
+  const startKg = initialWeight || 60;
+  openModal(`
+    <div class="ex-log-header">
+      <h3>🏋️ Plate Calculator (Bilanciere 20kg)</h3>
+      <button class="btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div class="row-gap" style="margin-top:12px">
+      <input type="number" step="2.5" id="plate-target-kg" class="input-field mono" style="font-size:1.2rem;text-align:center" value="${startKg}" oninput="updatePlateCalculatorView(this.value)">
+      <span class="mono">KG</span>
+    </div>
+    <div id="plate-render-area">${renderPlatesHTML(startKg)}</div>
+  `);
+}
+
