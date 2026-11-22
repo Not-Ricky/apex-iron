@@ -3,56 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#09090B">
+  <meta name="theme-color" content="#0B0B0E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>APEX IRON v4.6 — Pro Strength & Calisthenics</title>
-  <link rel="manifest" href="./manifest.json">
+  <title>APEX IRON v4.6 — Pro Strength &amp; Hypertrophy Tracker</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=4.6">
 </head>
 <body>
-
-  <!-- TOP BAR PULITA -->
   <header class="top-bar">
-    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.6</span></div>
-    <div class="row-gap">
-      <button class="btn-primary btn-sm" id="top-install-btn" style="display:none" onclick="triggerInstallPrompt()">📲 Installa App</button>
-      <button class="btn-icon small" id="sync-status-btn" onclick="state.analyticsSubTab='calendar';switchTab('analytics')" title="Cloud Sync">☁️</button>
-      <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
+    <div class="brand">APEX<span>IRON</span> <span class="version-pill">v4.6</span></div>
+    <div class="top-actions">
+      <button id="install-app-btn" class="btn-primary btn-sm" style="display:none" onclick="triggerPWAInstall()">📲 Installa App</button>
+      <button id="lang-toggle-btn" class="btn-ghost mono" onclick="toggleLanguage()">IT</button>
     </div>
   </header>
 
-  <!-- CONTENUTO PRINCIPALE -->
-  <main id="main-content"></main>
+  <div class="app-layout">
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button class="nav-item active" data-tab="workout" onclick="switchTab('workout')">
+        <span class="nav-icon">🏋️</span>
+        <span data-i18n="nav_workout">Workout</span>
+      </button>
+      <button class="nav-item" data-tab="routines" onclick="switchTab('routines')">
+        <span class="nav-icon">📋</span>
+        <span data-i18n="nav_routines">Schede</span>
+      </button>
+      <button class="nav-item" data-tab="exercises" onclick="switchTab('exercises')">
+        <span class="nav-icon">📘</span>
+        <span data-i18n="nav_exercises">Esercizi</span>
+      </button>
+      <button class="nav-item" data-tab="analytics" onclick="switchTab('analytics')">
+        <span class="nav-icon">📊</span>
+        <span data-i18n="nav_analytics">Analisi</span>
+      </button>
+      <button class="nav-item" data-tab="coach" onclick="switchTab('coach')">
+        <span class="nav-icon">🤖</span>
+        <span data-i18n="nav_coach">AI Coach</span>
+      </button>
+    </nav>
 
-  <!-- MODALE CUSTOM -->
-  <div id="custom-modal" class="modal-backdrop" onclick="if(event.target===this) closeModal()">
-    <div class="modal-sheet" id="modal-body"></div>
+    <main id="main-content"></main>
   </div>
 
-  <!-- NAVIGAZIONE PRINCIPALE A 5 TAB -->
-  <nav class="nav-bar">
-    <button class="nav-btn active" data-tab="workout" onclick="switchTab('workout')">
-      <span class="nav-icon">🏋️</span><span data-i18n="nav_workout">Workout</span>
-    </button>
-    <button class="nav-btn" data-tab="routines" onclick="switchTab('routines')">
-      <span class="nav-icon">📋</span><span data-i18n="nav_routines">Schede</span>
-    </button>
-    <button class="nav-btn" data-tab="exercises" onclick="switchTab('exercises')">
-      <span class="nav-icon">📖</span><span data-i18n="nav_exercises">Esercizi</span>
-    </button>
-    <button class="nav-btn" data-tab="analytics" onclick="switchTab('analytics')">
-      <span class="nav-icon">📊</span><span data-i18n="nav_analytics">Analisi</span>
-    </button>
-    <button class="nav-btn" data-tab="coach" onclick="switchTab('coach')">
-      <span class="nav-icon">🤖</span><span data-i18n="nav_coach">AI Coach</span>
-    </button>
-  </nav>
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div id="modal-box" class="modal-box" onclick="event.stopPropagation()"></div>
+  </div>
 
-  <script src="./data.js"></script>
+  <script src="exercises-db.js?v=4.6"></script>
   <script src="app.js?v=4.6"></script>
 </body>
 </html>
