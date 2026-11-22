@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>APEX IRON v4.4 — Pro Strength & Calisthenics</title>
+  <title>APEX IRON v4.5 — Pro Strength & Calisthenics</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 78px; overscroll-behavior-y: contain; }
 
-    /* TOP BAR MINIMAL (NO BACKDROP-FILTER PESANTE SU GPU) */
+    /* TOP BAR MINIMAL */
     .top-bar {
       position: sticky; top: 0; z-index: 50;
       background: #09090B; border-bottom: 1px solid var(--border); padding: 12px 16px;
@@ -49,12 +49,13 @@
       padding: 12px 14px; margin-bottom: 14px; position: relative; overflow: hidden;
     }
     .timer-progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--orange); will-change: width; }
-    .timer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .timer-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     #timer-display { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.55rem; color: var(--orange); cursor: pointer; letter-spacing: -0.5px; }
-    .timer-ctrl-group { display: flex; align-items: center; gap: 6px; }
-    .timer-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-weight: 700; font-size: 0.82rem; cursor: pointer; padding: 8px 11px; border-radius: 10px; }
+    .timer-ctrl-group { display: flex; align-items: center; gap: 5px; }
+    .timer-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; padding: 8px 10px; border-radius: 10px; }
     .timer-btn:active { background: var(--orange); border-color: var(--orange); color: #fff; }
-    .timer-btn-play { background: var(--orange); border-color: var(--orange); color: #fff; min-width: 42px; }
+    .timer-btn-play { background: var(--orange); border-color: var(--orange); color: #fff; min-width: 40px; }
+    .wake-active { border-color: var(--gold); color: var(--gold); background: rgba(245, 158, 11, 0.14); }
     .live-metrics-strip { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 10px; padding-top: 8px; font-size: 0.78rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
     /* CONTAINER & CARDS */
@@ -68,8 +69,15 @@
     .mono { font-family: 'JetBrains Mono', monospace; }
     .badge-orange { display: inline-flex; align-items: center; gap: 4px; background: var(--orange-glow); color: var(--orange); font-weight: 700; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; }
     .badge-gold { display: inline-flex; align-items: center; gap: 4px; background: rgba(245, 158, 11, 0.18); color: var(--gold); font-weight: 800; font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; }
+    .badge-superset { display: inline-flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid rgba(168, 85, 247, 0.45); font-weight: 800; font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
     .row-gap { display: flex; align-items: center; gap: 8px; }
     .full-width { width: 100%; }
+
+    /* SUPERSET GROUP STYLING */
+    .superset-card { border-left: 4px solid var(--purple); background: linear-gradient(145deg, #16131C 0%, #121216 100%); }
+    .superset-connected-top { margin-bottom: 4px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; }
+    .superset-connected-mid { margin-bottom: 4px; border-radius: 6px; }
+    .superset-connected-bot { border-top-left-radius: 6px; border-top-right-radius: 6px; }
 
     /* RANK BADGES */
     .rank-pill { font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -85,14 +93,14 @@
     .btn-outline { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 0.84rem; }
     .btn-danger { background: rgba(239, 68, 68, 0.16); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 9px 14px; font-weight: 700; cursor: pointer; font-size: 0.84rem; }
     .btn-danger-ghost { background: transparent; color: var(--red); border: none; font-weight: 600; cursor: pointer; padding: 6px 10px; font-size: 0.84rem; }
-    .btn-icon { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 9px; padding: 6px 9px; cursor: pointer; font-size: 0.86rem; }
+    .btn-icon { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 9px; padding: 6px 8px; cursor: pointer; font-size: 0.84rem; }
     .btn-sm { padding: 6px 11px; font-size: 0.78rem; }
     .input-field { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; outline: none; }
     .input-field:focus { border-color: var(--orange); }
 
     /* SUB-TABS & CHIPS */
-    .subtab-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--surface); padding: 5px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 14px; }
-    .subtab-btn { background: transparent; border: none; color: var(--muted); font-weight: 700; font-size: 0.82rem; padding: 8px; border-radius: 8px; cursor: pointer; }
+    .subtab-bar-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background: var(--surface); padding: 5px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .subtab-btn { background: transparent; border: none; color: var(--muted); font-weight: 700; font-size: 0.78rem; padding: 8px 4px; border-radius: 8px; cursor: pointer; }
     .subtab-btn.active { background: var(--orange); color: #fff; }
     .chip-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .chip-bar::-webkit-scrollbar { display: none; }
@@ -125,10 +133,11 @@
     .type-W { color: var(--blue); } .type-D { color: var(--gold); } .type-F { color: var(--red); } .type-RP { color: var(--purple); }
     .set-check { width: 22px; height: 22px; accent-color: var(--green); cursor: pointer; margin: 0 auto; }
 
-    /* PLATE CALCULATOR VISUAL */
+    /* PLATE CALCULATOR & WARM-UP VISUAL */
     .plate-bar-visual { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 18px 10px; background: var(--bg); border-radius: 12px; margin: 12px 0; min-height: 96px; }
     .bar-shaft { width: 34px; height: 12px; background: #71717A; border-radius: 2px; }
     .plate-disc { border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 800; color: #fff; writing-mode: vertical-rl; text-orientation: mixed; }
+    .warmup-preview-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
 
     /* ANATOMY SVG & DONUT CHART */
     .anatomy-container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-around; gap: 16px; padding: 10px 0; }
@@ -141,7 +150,7 @@
     .tech-diagram-box { background: #0E0E12; border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin: 10px 0; display: flex; align-items: center; justify-content: center; }
     .alt-box { background: var(--surface-2); padding: 8px 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--orange); }
 
-    /* HISTORY CARDS & SINGLE WORKOUT ANALYTICS */
+    /* HISTORY CARDS & BODY MEASUREMENTS */
     .history-card { border-left: 3px solid var(--orange); cursor: pointer; }
     .history-time-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); background: var(--surface-2); padding: 3px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; }
     .history-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: var(--surface-2); padding: 9px 8px; border-radius: 10px; margin: 10px 0; text-align: center; }
@@ -149,6 +158,7 @@
     .workout-mini-analytics { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
     .routine-ex-preview { list-style: none; margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: grid; gap: 4px; }
     .builder-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
+    .body-grid-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
 
     /* CALENDAR & CHARTS */
     .suggestion-box { background: var(--orange-glow); border: 1px solid rgba(255,85,0,0.4); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.84rem; margin-top: 10px; }
@@ -157,7 +167,7 @@
     .cal-trained { background: var(--orange); color: #fff; font-weight: 700; }
     .cal-today { border: 1px solid #fff; }
     .cal-suggested { border: 1px dashed var(--orange); color: var(--orange); }
-    .chart-svg { width: 100%; height: 150px; background: var(--surface-2); border-radius: 10px; margin: 8px 0; }
+    .chart-svg { width: 100%; height: 155px; background: var(--surface-2); border-radius: 10px; margin: 8px 0; }
     .muscle-bars-grid { display: grid; gap: 10px; margin-top: 12px; }
     .progress-track { width: 100%; height: 7px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-top: 4px; }
     .progress-fill { height: 100%; border-radius: 99px; }
@@ -209,7 +219,7 @@
 
   <!-- TOP BAR PULITA -->
   <header class="top-bar">
-    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.4</span></div>
+    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.5</span></div>
     <div class="row-gap">
       <button class="btn-primary btn-sm" id="top-install-btn" style="display:none" onclick="triggerInstallPrompt()">📲 Installa App</button>
       <button class="btn-icon small" id="sync-status-btn" onclick="state.analyticsSubTab='calendar';switchTab('analytics')" title="Cloud Sync">☁️</button>
@@ -282,6 +292,45 @@
 
     function isAppStandalone() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    // ================= WAKE LOCK INTELLIGENTE (SCHERMO SEMPRE ACCESO DURANTE WORKOUT) =================
+    let wakeLockSentinel = null;
+    let wakeLockEnabled = true;
+
+    async function requestWakeLock() {
+      if (!wakeLockEnabled || !state.activeWorkout || document.hidden) return;
+      try {
+        if ('wakeLock' in navigator && !wakeLockSentinel) {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          wakeLockSentinel.addEventListener('release', () => { wakeLockSentinel = null; updateWakeLockUI(); });
+          updateWakeLockUI();
+        }
+      } catch (e) {}
+    }
+
+    async function releaseWakeLock() {
+      try {
+        if (wakeLockSentinel) {
+          await wakeLockSentinel.release();
+          wakeLockSentinel = null;
+          updateWakeLockUI();
+        }
+      } catch (e) {}
+    }
+
+    function toggleWakeLockManual() {
+      wakeLockEnabled = !wakeLockEnabled;
+      if (wakeLockEnabled) requestWakeLock();
+      else releaseWakeLock();
+      updateWakeLockUI();
+    }
+
+    function updateWakeLockUI() {
+      const btn = document.getElementById('wake-lock-btn');
+      if (!btn) return;
+      btn.classList.toggle('wake-active', wakeLockEnabled && !!wakeLockSentinel);
+      btn.title = wakeLockEnabled ? 'Schermo sempre acceso: ATTIVO' : 'Schermo sempre acceso: DISATTIVATO';
     }
 
     // ================= DIAGRAMMI VETTORIALI ESPLICATIVI ESERCIZI =================
@@ -436,7 +485,7 @@
         start_routine: "Avvia", search_ex: "Cerca esercizio o muscolo...", create_custom_ex: "+ Esercizio Custom",
         cat_all: "Tutti", cat_bodybuilding: "Bodybuilding", cat_bodyweight: "Corpo Libero", cat_calisthenics: "Calisthenics", cat_mobility: "Mobilità", cat_stretching: "Stretching",
         exec_label: "Esecuzione Sintetica", alt_label: "Alternative senza macchinari",
-        sub_muscles: "Muscoli & Ranking", sub_history: "Storico", sub_calendar: "Calendario & Sync",
+        sub_muscles: "Muscoli", sub_body: "Corpo", sub_history: "Storico", sub_calendar: "Calendario",
         bw_label: "Peso Corporeo (kg)", bw_hint: "Scorri la ruota per calibrare i tuoi Ranking di Forza",
         muscle_dist: "Distribuzione Muscolare & Mappa Anatomica",
         strength_ranks: "Ranking Forza & Record Personali (1RM)",
@@ -458,7 +507,7 @@
         start_routine: "Start", search_ex: "Search exercise or muscle...", create_custom_ex: "+ Custom Exercise",
         cat_all: "All", cat_bodybuilding: "Bodybuilding", cat_bodyweight: "Bodyweight", cat_calisthenics: "Calisthenics", cat_mobility: "Mobility", cat_stretching: "Stretching",
         exec_label: "Quick Execution", alt_label: "Equipment-Free Alternatives",
-        sub_muscles: "Muscles & Ranks", sub_history: "History", sub_calendar: "Calendar & Sync",
+        sub_muscles: "Muscles", sub_body: "Body", sub_history: "History", sub_calendar: "Calendar",
         bw_label: "Bodyweight (kg)", bw_hint: "Scroll wheel to calibrate your Strength Rankings",
         muscle_dist: "Muscle Distribution & Anatomy Map",
         strength_ranks: "Strength Rankings & Personal Records (1RM)",
@@ -478,7 +527,7 @@
       { id: "preset_pull", name: "PULL (Preset)", exercises: ["pullups_pronated", "barbell_row", "seated_cable_row", "face_pull", "incline_db_curl", "hammer_curl"] }
     ];
 
-    // ================= CACHE IN MEMORIA PER EVITARE RICALCOLI CONTINUI (RAM & CPU SAVER) =================
+    // ================= CACHE IN MEMORIA =================
     let exerciseLookupMap = null;
     let cached1RMMap = null;
 
@@ -500,6 +549,7 @@
     let state = {
       lang: localStorage.getItem('apex_lang') || 'it',
       bodyweight: parseFloat(localStorage.getItem('apex_bw')) || 75.0,
+      bodyLogs: JSON.parse(localStorage.getItem('apex_body_logs')) || [],
       customExercises: JSON.parse(localStorage.getItem('apex_custom_ex')) || [],
       routines: JSON.parse(localStorage.getItem('apex_routines')) || DEFAULT_ROUTINES,
       history: JSON.parse(localStorage.getItem('apex_history')) || [],
@@ -512,6 +562,7 @@
       currentTab: 'workout',
       analyticsSubTab: 'muscles',
       selectedChartEx: 'bench_press_barbell',
+      selectedBodyMetric: 'weight',
       calendarMonthOffset: 0,
       expandedHistoryIds: new Set(),
       chatMessages: [],
@@ -519,6 +570,67 @@
       editingHistoryIndex: null,
       editingWorkoutDraft: null
     };
+
+    // ================= SUPERSET HELPER (CALCOLO ETICHETTE A1, A2, B1... E LOGICA TIMER) =================
+    function computeSupersetBadges(exercises) {
+      const badges = new Array(exercises.length).fill(null);
+      const groupTotals = {};
+      exercises.forEach(ex => {
+        if (ex.supersetId) groupTotals[ex.supersetId] = (groupTotals[ex.supersetId] || 0) + 1;
+      });
+      const validGroupLetters = {};
+      let nextLetterCode = 65; // 'A'
+      Object.keys(groupTotals).forEach(gid => {
+        if (groupTotals[gid] >= 2) {
+          validGroupLetters[gid] = String.fromCharCode(nextLetterCode++);
+        }
+      });
+      const groupCounters = {};
+      exercises.forEach((ex, idx) => {
+        const gid = ex.supersetId;
+        if (gid && validGroupLetters[gid]) {
+          groupCounters[gid] = (groupCounters[gid] || 0) + 1;
+          const pos = groupCounters[gid];
+          const total = groupTotals[gid];
+          badges[idx] = {
+            gid,
+            label: `${validGroupLetters[gid]}${pos}`,
+            isFirst: pos === 1,
+            isLast: pos === total,
+            total
+          };
+        }
+      });
+      return badges;
+    }
+
+    function toggleSupersetLink(exIndex) {
+      if (!state.activeWorkout) return;
+      const list = state.activeWorkout.exercises;
+      const cur = list[exIndex];
+      const next = list[exIndex + 1];
+
+      if (cur.supersetId) {
+        // Scollega questo esercizio dal superset
+        const oldGid = cur.supersetId;
+        delete cur.supersetId;
+        const remaining = list.filter(e => e.supersetId === oldGid);
+        if (remaining.length < 2) remaining.forEach(e => delete e.supersetId);
+      } else if (next) {
+        // Collega con l'esercizio successivo
+        const gid = next.supersetId || ('ss_' + Date.now());
+        cur.supersetId = gid;
+        next.supersetId = gid;
+      } else if (exIndex > 0) {
+        // Se è l'ultimo della lista, collega con il precedente
+        const prev = list[exIndex - 1];
+        const gid = prev.supersetId || ('ss_' + Date.now());
+        prev.supersetId = gid;
+        cur.supersetId = gid;
+      }
+      saveState();
+      renderWorkoutTab();
+    }
 
     // ================= RICALCOLO AUTOMATICO STATISTICHE & PR SU TUTTO LO STORICO =================
     function recalculateEntireHistoryStats() {
@@ -571,7 +683,7 @@
       });
     }
 
-    // ================= CLOUD SYNC & DEBOUNCED PERSISTENCE (BATTERY SAVER) =================
+    // ================= CLOUD SYNC & DEBOUNCED PERSISTENCE =================
     let syncEventSource = null;
     let saveDebounceTimer = null;
     let cloudDebounceTimer = null;
@@ -605,6 +717,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             bodyweight: state.bodyweight,
+            bodyLogs: state.bodyLogs,
             customExercises: state.customExercises,
             routines: state.routines,
             history: state.history,
@@ -626,6 +739,7 @@
         const remote = await res.json();
         if (remote && (forceOverwrite || (remote.lastUpdated && remote.lastUpdated > state.lastUpdated))) {
           if (remote.bodyweight) state.bodyweight = remote.bodyweight;
+          if (remote.bodyLogs) state.bodyLogs = forceOverwrite ? remote.bodyLogs : mergeById(state.bodyLogs, remote.bodyLogs);
           if (remote.customExercises) { state.customExercises = mergeById(state.customExercises, remote.customExercises); rebuildExerciseCache(); }
           if (remote.routines) state.routines = forceOverwrite ? remote.routines : mergeById(state.routines, remote.routines);
           if ('history' in remote) state.history = remote.history || [];
@@ -634,7 +748,7 @@
           recalculateEntireHistoryStats();
           persistLocalOnly();
           renderCurrentView();
-        } else if (!remote && state.history.length > 0) {
+        } else if (!remote && (state.history.length > 0 || state.bodyLogs.length > 0)) {
           await pushToCloud();
         }
         updateSyncIcon('synced');
@@ -652,6 +766,7 @@
           const remote = JSON.parse(e.data).data;
           if (remote && remote.lastUpdated && remote.lastUpdated > state.lastUpdated) {
             if (remote.bodyweight) state.bodyweight = remote.bodyweight;
+            if (remote.bodyLogs) state.bodyLogs = mergeById(state.bodyLogs, remote.bodyLogs);
             if (remote.customExercises) { state.customExercises = mergeById(state.customExercises, remote.customExercises); rebuildExerciseCache(); }
             if (remote.routines) state.routines = mergeById(state.routines, remote.routines);
             if ('history' in remote) state.history = remote.history || [];
@@ -669,6 +784,7 @@
     function persistLocalOnly() {
       localStorage.setItem('apex_lang', state.lang);
       localStorage.setItem('apex_bw', String(state.bodyweight));
+      localStorage.setItem('apex_body_logs', JSON.stringify(state.bodyLogs));
       localStorage.setItem('apex_custom_ex', JSON.stringify(state.customExercises));
       localStorage.setItem('apex_routines', JSON.stringify(state.routines));
       localStorage.setItem('apex_history', JSON.stringify(state.history));
@@ -702,7 +818,70 @@
     }
     function closeModal() {
       document.getElementById('custom-modal').classList.remove('open');
-      document.getElementById('modal-body').innerHTML = ''; // Libera RAM DOM alla chiusura
+      document.getElementById('modal-body').innerHTML = '';
+    }
+
+    // ================= GENERATORE WARM-UP AUTOMATICO =================
+    function openWarmupGeneratorModal(exIndex) {
+      const exItem = state.activeWorkout.exercises[exIndex];
+      const dbEx = getExercise(exItem.exerciseId);
+      const firstWorking = exItem.sets.find(s => s.type !== 'W' && parseFloat(s.weight) > 0);
+      const { bestWeight } = getBest1RMForExercise(exItem.exerciseId);
+      const defaultTarget = firstWorking ? parseFloat(firstWorking.weight) : (bestWeight || 60);
+
+      const computeWarmupSets = (targetKg) => {
+        const w = parseFloat(targetKg) || 20;
+        const round25 = (val) => Math.max(20, Math.round(val / 2.5) * 2.5);
+        if (w <= 25) {
+          return [{ weight: w, reps: 10, pct: '100%' }];
+        }
+        const plan = [
+          { weight: 20, reps: 10, pct: 'Bilanciere' },
+          { weight: round25(w * 0.50), reps: 6, pct: '50%' },
+          { weight: round25(w * 0.70), reps: 3, pct: '70%' },
+          { weight: round25(w * 0.85), reps: 1, pct: '85%' }
+        ];
+        // Rimuove eventuali duplicati di peso
+        const unique = [];
+        plan.forEach(p => { if (!unique.some(u => u.weight === p.weight)) unique.push(p); });
+        return unique;
+      };
+
+      const renderPreview = (val) => {
+        const sets = computeWarmupSets(val);
+        return sets.map((s, i) => `
+          <div class="warmup-preview-row">
+            <span><span class="type-W"><strong>W${i + 1}</strong></span> • ${s.pct}</span>
+            <span><strong>${s.weight} kg</strong> × ${s.reps} rip</span>
+          </div>
+        `).join('');
+      };
+
+      openModal(`
+        <div class="ex-log-header">
+          <div>
+            <span class="badge-orange">🔥 Warm-Up Automatico</span>
+            <h3 style="margin-top:4px">${dbEx.name[state.lang]}</h3>
+          </div>
+          <button class="btn-icon" onclick="closeModal()">✕</button>
+        </div>
+        <p class="small muted" style="margin:8px 0">Inserisci il carico della tua prima serie allenante (KG):</p>
+        <div class="row-gap" style="margin-bottom:12px">
+          <input type="number" step="2.5" id="wu-target-input" class="input-field mono" style="font-size:1.25rem;text-align:center" value="${defaultTarget}"
+            oninput="document.getElementById('wu-preview-box').innerHTML = (${renderPreview.toString()})(this.value)">
+          <span class="mono">KG</span>
+        </div>
+        <div id="wu-preview-box">${renderPreview(defaultTarget)}</div>
+        <div class="row-gap" style="margin-top:14px">
+          <button class="btn-primary full-width" onclick="
+            const targetVal = document.getElementById('wu-target-input').value;
+            const generated = (${computeWarmupSets.toString()})(targetVal);
+            const newSets = generated.map(g => ({ type: 'W', weight: String(g.weight), reps: String(g.reps), rir: '', rpe: '', done: false, isPR: false }));
+            state.activeWorkout.exercises[${exIndex}].sets = [...newSets, ...state.activeWorkout.exercises[${exIndex}].sets];
+            saveState(); closeModal(); renderWorkoutTab();
+          ">➕ Inserisci Serie di Avvicinamento</button>
+        </div>
+      `);
     }
 
     // ================= PLATE CALCULATOR (BILANCIERE 20 KG) =================
@@ -747,20 +926,50 @@
       `);
     }
 
-    // ================= TIMER DI RECUPERO ZERO-WAKE (TIMESTAMP-BASED + AUDIO SINGLETON) =================
+    // ================= TIMER DI RECUPERO ZERO-WAKE + AUDIO DOPPIO BEEP + NOTIFICA SISTEMA =================
     let sharedAudioCtx = null;
+
+    function requestNotificationPermissionOnce() {
+      try {
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function sendRestCompleteNotification() {
+      try {
+        if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+          new Notification('APEX IRON — Recupero Terminato ⏱️', {
+            body: 'È il momento della prossima serie!',
+            tag: 'apex-rest-timer',
+            renotify: true
+          });
+        }
+      } catch (e) {}
+    }
 
     function playBeep() {
       try {
         if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
-        const osc = sharedAudioCtx.createOscillator(), gain = sharedAudioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(880, sharedAudioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, sharedAudioCtx.currentTime);
-        osc.connect(gain); gain.connect(sharedAudioCtx.destination);
-        osc.start(); osc.stop(sharedAudioCtx.currentTime + 0.35);
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        const now = sharedAudioCtx.currentTime;
+        // Doppio tono acustico nitido (880Hz -> 1175Hz)
+        [880, 1174.66].forEach((freq, i) => {
+          const osc = sharedAudioCtx.createOscillator();
+          const gain = sharedAudioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.22);
+          gain.gain.setValueAtTime(0.38, now + i * 0.22);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.22 + 0.2);
+          osc.connect(gain);
+          gain.connect(sharedAudioCtx.destination);
+          osc.start(now + i * 0.22);
+          osc.stop(now + i * 0.22 + 0.2);
+        });
+        if (navigator.vibrate) navigator.vibrate([250, 100, 250, 100, 400]);
       } catch (e) {}
+      sendRestCompleteNotification();
     }
 
     function formatTime(sec) {
@@ -795,6 +1004,7 @@
     }
 
     function startTimer(customSec = null) {
+      requestNotificationPermissionOnce();
       if (customSec !== null) { state.timer.defaultSeconds = customSec; state.timer.remaining = customSec; }
       clearInterval(state.timer.interval);
       state.timer.endTime = Date.now() + state.timer.remaining * 1000;
@@ -826,7 +1036,6 @@
       updateTimerUI();
     }
 
-    // Sospende polling CPU e SSE quando l'app è in background per risparmiare batteria
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         if (state.timer.interval) { clearInterval(state.timer.interval); state.timer.interval = null; }
@@ -838,6 +1047,7 @@
             state.timer.interval = setInterval(syncTimerFromClock, 1000);
           }
         }
+        requestWakeLock();
         startRealtimeSyncListener();
       }
     });
@@ -892,6 +1102,7 @@
 
     // ================= WORKOUT ATTIVO =================
     function startWorkout(routineId = null) {
+      requestNotificationPermissionOnce();
       const routine = routineId ? state.routines.find(r => r.id === routineId) : null;
       state.activeWorkout = {
         id: 'w_' + Date.now(),
@@ -902,10 +1113,12 @@
         })) : []
       };
       saveState(true);
+      requestWakeLock();
       switchTab('workout');
     }
 
     function repeatPastWorkout(historyIndex) {
+      requestNotificationPermissionOnce();
       const past = state.history[historyIndex];
       if (!past) return;
       state.activeWorkout = {
@@ -915,11 +1128,13 @@
         startTime: Date.now(),
         exercises: past.exercises.map(ex => ({
           exerciseId: ex.exerciseId,
+          supersetId: ex.supersetId || null,
           notes: ex.notes || '',
           sets: ex.sets.map(s => ({ ...s, done: false, isPR: false }))
         }))
       };
       saveState(true);
+      requestWakeLock();
       switchTab('workout');
     }
 
@@ -965,8 +1180,15 @@
       const exItem = state.activeWorkout.exercises[exIndex];
       const set = exItem.sets[setIndex];
       set[field] = value;
+
       if (field === 'done' && value === true) {
-        startTimer(state.timer.defaultSeconds);
+        // Verifica Superset: il timer parte solo se NON è in superset oppure se è l'ULTIMO esercizio del blocco superset
+        const ssBadges = computeSupersetBadges(state.activeWorkout.exercises);
+        const ssInfo = ssBadges[exIndex];
+        if (!ssInfo || ssInfo.isLast) {
+          startTimer(state.timer.defaultSeconds);
+        }
+
         const kg = parseFloat(set.weight) || 0;
         const reps = parseInt(set.reps) || 0;
         if (kg > 0 && reps > 0 && set.type !== 'W') {
@@ -998,6 +1220,7 @@
       });
       state.activeWorkout = null;
       clearInterval(state.timer.interval); state.timer.interval = null; state.timer.running = false;
+      releaseWakeLock();
       recalculateEntireHistoryStats();
       saveState(true);
       state.analyticsSubTab = 'history';
@@ -1083,7 +1306,7 @@
           if (max1RM > 0 || vol > 0) {
             points.push({
               date: new Date(w.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: '2-digit' }),
-              oneRM: Math.round(max1RM * 10) / 10, volume: Math.round(vol)
+              value: Math.round(max1RM * 10) / 10, volume: Math.round(vol)
             });
           }
         }
@@ -1117,7 +1340,7 @@
       else if (state.currentTab === 'coach') renderCoachTab();
     }
 
-    // --- TAB 1: WORKOUT ATTIVO ---
+    // --- TAB 1: WORKOUT ATTIVO (CON SUPERSET & WARM-UP & WAKE LOCK) ---
     function renderWorkoutTab() {
       const container = document.getElementById('main-content');
       if (!state.activeWorkout) {
@@ -1166,6 +1389,7 @@
         if (s.done) { liveSets++; liveVol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0); }
       }));
       const elapsedMin = Math.max(1, Math.round((Date.now() - state.activeWorkout.startTime) / 60000));
+      const ssBadges = computeSupersetBadges(state.activeWorkout.exercises);
 
       container.innerHTML = `
         <div class="workout-timer-dock">
@@ -1175,6 +1399,7 @@
               <span id="timer-display" onclick="openTimerInputModal()">${formatTime(state.timer.remaining)}</span>
             </div>
             <div class="timer-ctrl-group">
+              <button class="timer-btn ${wakeLockEnabled ? 'wake-active' : ''}" id="wake-lock-btn" onclick="toggleWakeLockManual()" title="Schermo sempre acceso">🔆</button>
               <button class="timer-btn" onclick="adjustTimer(-15)">-15s</button>
               <button class="timer-btn" onclick="adjustTimer(15)">+15s</button>
               <button class="timer-btn timer-btn-play" id="timer-toggle-btn" onclick="toggleTimer()">${state.timer.running ? '⏸' : '▶'}</button>
@@ -1191,7 +1416,7 @@
         <div class="workout-header-bar">
           <div><span class="badge-orange">${t('active_workout')}</span><h2 style="margin-top:4px">${state.activeWorkout.name}</h2></div>
           <div class="row-gap">
-            <button class="btn-danger-ghost" onclick="if(confirm('Annullare la sessione?')){state.activeWorkout=null;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.running=false;saveState(true);renderWorkoutTab();}">${t('cancel_workout')}</button>
+            <button class="btn-danger-ghost" onclick="if(confirm('Annullare la sessione?')){state.activeWorkout=null;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.running=false;releaseWakeLock();saveState(true);renderWorkoutTab();}">${t('cancel_workout')}</button>
             <button class="btn-primary" onclick="finishWorkout()">${t('finish_workout')}</button>
           </div>
         </div>
@@ -1202,18 +1427,24 @@
             const prev = getPreviousPerformance(exItem.exerciseId);
             const { best1RM } = getBest1RMForExercise(exItem.exerciseId);
             const rank = calculateStrengthRank(exItem.exerciseId, best1RM);
-            const sampleKg = parseFloat(exItem.sets[0]?.weight) || 60;
+            const sampleKg = parseFloat(exItem.sets.find(s => s.type !== 'W')?.weight || exItem.sets[0]?.weight) || 60;
+            const ss = ssBadges[exIdx];
+            const ssClass = ss ? `superset-card ${ss.isFirst ? 'superset-connected-top' : (ss.isLast ? 'superset-connected-bot' : 'superset-connected-mid')}` : '';
+
             return `
-              <div class="card">
+              <div class="card ${ssClass}">
                 <div class="ex-log-header">
                   <div>
                     <div class="row-gap" style="flex-wrap:wrap">
+                      ${ss ? `<span class="badge-superset">🔗 ${ss.label} ${ss.isLast ? '• Timer ON' : '• No Rest'}</span>` : ''}
                       <span class="card-title">${dbEx.name[state.lang]}</span>
                       <span class="rank-pill rank-${rank}">${rank}</span>
                     </div>
                     <div class="prev-ghost">${t('prev_session')} ${prev || t('no_prev')}</div>
                   </div>
-                  <div class="row-gap">
+                  <div class="row-gap" style="flex-shrink:0">
+                    <button class="btn-icon" onclick="toggleSupersetLink(${exIdx})" title="${ss ? 'Scollega Superset' : 'Collega in Superset con esercizio successivo'}" style="${ss ? 'border-color:var(--purple);color:var(--purple)' : ''}">🔗</button>
+                    <button class="btn-icon" onclick="openWarmupGeneratorModal(${exIdx})" title="Genera Warm-Up">🔥</button>
                     <button class="btn-icon" onclick="openPlateCalculatorModal(${sampleKg})" title="Calcola Dischi">🏋️</button>
                     <button class="btn-icon" onclick="openExerciseDetailModal('${dbEx.id}')" title="Tecnica">ℹ️</button>
                   </div>
@@ -1447,20 +1678,139 @@
       `);
     }
 
-    // --- TAB 4: ANALISI (MUSCOLI, STORICO LAZY-RENDERED, CALENDARIO) ---
+    // --- TAB 4: ANALISI (MUSCOLI, CORPO & MISURE, STORICO, CALENDARIO) ---
     function renderAnalyticsTab() {
       const container = document.getElementById('main-content');
       container.innerHTML = `
-        <div class="subtab-bar">
+        <div class="subtab-bar-4">
           <button class="subtab-btn ${state.analyticsSubTab==='muscles'?'active':''}" onclick="state.analyticsSubTab='muscles';renderAnalyticsTab()">${t('sub_muscles')}</button>
+          <button class="subtab-btn ${state.analyticsSubTab==='body'?'active':''}" onclick="state.analyticsSubTab='body';renderAnalyticsTab()">📏 ${t('sub_body')}</button>
           <button class="subtab-btn ${state.analyticsSubTab==='history'?'active':''}" onclick="state.analyticsSubTab='history';renderAnalyticsTab()">${t('sub_history')}</button>
           <button class="subtab-btn ${state.analyticsSubTab==='calendar'?'active':''}" onclick="state.analyticsSubTab='calendar';renderAnalyticsTab()">${t('sub_calendar')}</button>
         </div>
         <div id="analytics-sub-content"></div>
       `;
       if (state.analyticsSubTab === 'muscles') renderMusclesAndRanksSubtab();
+      else if (state.analyticsSubTab === 'body') renderBodyMeasurementsSubtab();
       else if (state.analyticsSubTab === 'history') renderHistorySubtab();
       else renderCalendarSubtab();
+    }
+
+    // --- SOTTO-TAB MISURE CORPOREE & DIARIO PESO ---
+    function renderBodyMeasurementsSubtab() {
+      const box = document.getElementById('analytics-sub-content');
+      const sortedLogs = [...state.bodyLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const latest = sortedLogs[sortedLogs.length - 1] || {};
+      const metric = state.selectedBodyMetric;
+
+      const metricLabels = {
+        weight: { label: 'Peso Corporeo', unit: 'kg' },
+        bf: { label: 'Massa Grassa (BF%)', unit: '%' },
+        chest: { label: 'Petto', unit: 'cm' },
+        arm: { label: 'Braccio', unit: 'cm' },
+        waist: { label: 'Vita', unit: 'cm' },
+        thigh: { label: 'Coscia', unit: 'cm' }
+      };
+
+      const chartPoints = sortedLogs
+        .filter(l => l[metric] !== undefined && l[metric] !== '' && !isNaN(parseFloat(l[metric])))
+        .map(l => ({
+          date: new Date(l.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: '2-digit' }),
+          value: parseFloat(l[metric])
+        }));
+
+      box.innerHTML = `
+        <div class="card">
+          <h3>📏 Registra Misure Corporee</h3>
+          <p class="small muted" style="margin-top:4px">Aggiornando il peso corporeo vengono ricalibrati automaticamente anche i Ranking di Forza.</p>
+          <div class="body-grid-inputs">
+            <div>
+              <label class="small muted">Peso (kg)</label>
+              <input type="number" step="0.1" id="bm-weight" class="input-field mono" value="${latest.weight || state.bodyweight}">
+            </div>
+            <div>
+              <label class="small muted">BF (%)</label>
+              <input type="number" step="0.1" id="bm-bf" class="input-field mono" placeholder="14.5" value="${latest.bf || ''}">
+            </div>
+            <div>
+              <label class="small muted">Petto (cm)</label>
+              <input type="number" step="0.5" id="bm-chest" class="input-field mono" placeholder="102" value="${latest.chest || ''}">
+            </div>
+            <div>
+              <label class="small muted">Braccio (cm)</label>
+              <input type="number" step="0.5" id="bm-arm" class="input-field mono" placeholder="38" value="${latest.arm || ''}">
+            </div>
+            <div>
+              <label class="small muted">Vita (cm)</label>
+              <input type="number" step="0.5" id="bm-waist" class="input-field mono" placeholder="78" value="${latest.waist || ''}">
+            </div>
+            <div>
+              <label class="small muted">Coscia (cm)</label>
+              <input type="number" step="0.5" id="bm-thigh" class="input-field mono" placeholder="58" value="${latest.thigh || ''}">
+            </div>
+          </div>
+          <input type="text" id="bm-notes" class="input-field" placeholder="Note condizione fisica, idratazione..." style="margin-bottom:10px">
+          <button class="btn-primary full-width" onclick="saveBodyMeasurement()">💾 Salva Misurazione</button>
+        </div>
+
+        <div class="card">
+          <div class="ex-log-header">
+            <h3>📈 Andamento Nel Tempo</h3>
+            <select class="set-select" style="padding:6px 10px" onchange="state.selectedBodyMetric=this.value;renderBodyMeasurementsSubtab()">
+              ${Object.keys(metricLabels).map(k => `<option value="${k}" ${metric===k?'selected':''}>${metricLabels[k].label} (${metricLabels[k].unit})</option>`).join('')}
+            </select>
+          </div>
+          ${renderSVGChart(chartPoints, metricLabels[metric].unit)}
+        </div>
+
+        <h3 class="section-title">Storico Misurazioni (${sortedLogs.length})</h3>
+        ${sortedLogs.length === 0 ? `<div class="card"><p class="muted small">Nessuna misurazione registrata finora.</p></div>` : ''}
+        ${[...sortedLogs].reverse().map(log => `
+          <div class="card">
+            <div class="ex-log-header">
+              <div>
+                <strong>📅 ${new Date(log.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+                ${log.notes ? `<div class="small muted">${log.notes}</div>` : ''}
+              </div>
+              <button class="btn-icon" style="color:var(--red)" onclick="deleteBodyMeasurement('${log.id}')">🗑️</button>
+            </div>
+            <div class="mono small" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px">
+              ${log.weight ? `<span>⚖️ <strong>${log.weight} kg</strong></span>` : ''}
+              ${log.bf ? `<span>🔥 BF: <strong>${log.bf}%</strong></span>` : ''}
+              ${log.chest ? `<span>Petto: <strong>${log.chest}cm</strong></span>` : ''}
+              ${log.arm ? `<span>Braccio: <strong>${log.arm}cm</strong></span>` : ''}
+              ${log.waist ? `<span>Vita: <strong>${log.waist}cm</strong></span>` : ''}
+              ${log.thigh ? `<span>Coscia: <strong>${log.thigh}cm</strong></span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function saveBodyMeasurement() {
+      const w = parseFloat(document.getElementById('bm-weight').value);
+      const entry = {
+        id: 'bm_' + Date.now(),
+        date: new Date().toISOString(),
+        weight: !isNaN(w) ? w : null,
+        bf: document.getElementById('bm-bf').value.trim(),
+        chest: document.getElementById('bm-chest').value.trim(),
+        arm: document.getElementById('bm-arm').value.trim(),
+        waist: document.getElementById('bm-waist').value.trim(),
+        thigh: document.getElementById('bm-thigh').value.trim(),
+        notes: document.getElementById('bm-notes').value.trim()
+      };
+      if (!entry.weight && !entry.bf && !entry.chest && !entry.arm && !entry.waist && !entry.thigh) return;
+      if (entry.weight) state.bodyweight = entry.weight;
+      state.bodyLogs.push(entry);
+      saveState(true);
+      renderBodyMeasurementsSubtab();
+    }
+
+    function deleteBodyMeasurement(id) {
+      state.bodyLogs = state.bodyLogs.filter(x => x.id !== id);
+      saveState(true);
+      renderBodyMeasurementsSubtab();
     }
 
     function renderMusclesAndRanksSubtab() {
@@ -1602,7 +1952,7 @@
               <option value="${e.id}" ${state.selectedChartEx === e.id ? 'selected' : ''}>${e.name[state.lang]}</option>
             `).join('')}
           </select>
-          ${renderSVGChart(progData)}
+          ${renderSVGChart(progData, 'kg')}
         </div>
       `;
 
@@ -1629,7 +1979,7 @@
       }, 180);
     }
 
-    // ================= STORICO CRONOLOGICO CON LAZY RENDERING (RAM OPTIMIZED) =================
+    // ================= STORICO CRONOLOGICO CON LAZY RENDERING & SUPERSET =================
     function formatClockTime(timestampMs) {
       if (!timestampMs) return '--:--';
       return new Date(timestampMs).toLocaleTimeString(state.lang === 'it' ? 'it-IT' : 'en-US', { hour: '2-digit', minute: '2-digit' });
@@ -1661,16 +2011,23 @@
 
     function renderHistoryDrawerContentHTML(w) {
       if (!w) return '';
+      const ssBadges = computeSupersetBadges(w.exercises || []);
       return `
         ${renderSingleWorkoutAnalyticsHTML(w)}
         <div class="small" style="font-weight:700;margin-bottom:6px">📋 Log Completo Serie</div>
-        ${w.exercises.map(e => `
-          <div style="margin-bottom:8px;background:var(--surface-2);padding:8px 10px;border-radius:8px">
-            <div class="small"><strong>${getExercise(e.exerciseId).name[state.lang]}</strong></div>
-            ${e.notes ? `<div class="small muted" style="font-style:italic">"${e.notes}"</div>` : ''}
-            <div class="mono small muted" style="margin-top:4px">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}[${s.type}]: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'}, RPE ${s.rpe||'-'}) ${s.isPR?'🏆':''}`).join('<br>')}</div>
-          </div>
-        `).join('')}
+        ${w.exercises.map((e, idx) => {
+          const ss = ssBadges[idx];
+          return `
+            <div style="margin-bottom:8px;background:var(--surface-2);padding:8px 10px;border-radius:8px;${ss ? 'border-left:3px solid var(--purple)' : ''}">
+              <div class="row-gap">
+                ${ss ? `<span class="badge-superset">🔗 ${ss.label}</span>` : ''}
+                <strong class="small">${getExercise(e.exerciseId).name[state.lang]}</strong>
+              </div>
+              ${e.notes ? `<div class="small muted" style="font-style:italic">"${e.notes}"</div>` : ''}
+              <div class="mono small muted" style="margin-top:4px">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}[${s.type}]: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'}, RPE ${s.rpe||'-'}) ${s.isPR?'🏆':''}`).join('<br>')}</div>
+            </div>
+          `;
+        }).join('')}
       `;
     }
 
@@ -1900,6 +2257,7 @@
           const endStr = formatClockTime(w.endTime || new Date(w.date).getTime());
           const totalSets = w.exercises.reduce((acc, e) => acc + e.sets.filter(s => s.done).length, 0);
           const exCount = w.exercises.filter(e => e.sets.some(s => s.done)).length;
+          const ssBadges = computeSupersetBadges(w.exercises || []);
 
           return `
             <div class="card history-card" onclick="toggleHistoryExpand('${wId}', ${w.origIdx})">
@@ -1926,12 +2284,13 @@
               </div>
 
               <div class="small muted">
-                ${w.exercises.map(e => {
+                ${w.exercises.map((e, idx) => {
                   const doneSets = e.sets.filter(s => s.done);
                   if (!doneSets.length) return '';
                   const topSet = doneSets.reduce((best, cur) => ((parseFloat(cur.weight)||0) > (parseFloat(best.weight)||0) ? cur : best), doneSets[0]);
                   const hasPR = doneSets.some(s => s.isPR);
-                  return `<div>• <strong>${getExercise(e.exerciseId).name[state.lang]}</strong>: ${doneSets.length} serie (Top: ${topSet.weight||0}kg × ${topSet.reps||0}) ${hasPR ? '🏆' : ''}</div>`;
+                  const ss = ssBadges[idx];
+                  return `<div>• ${ss ? `<span class="badge-superset" style="padding:0 5px">${ss.label}</span> ` : ''}<strong>${getExercise(e.exerciseId).name[state.lang]}</strong>: ${doneSets.length} serie (Top: ${topSet.weight||0}kg × ${topSet.reps||0}) ${hasPR ? '🏆' : ''}</div>`;
                 }).join('')}
               </div>
 
@@ -2010,17 +2369,31 @@
       `;
     }
 
-    function renderSVGChart(points) {
-      if (!points.length) return `<p class="muted small" style="padding:16px 0">${state.lang === 'it' ? 'Registra almeno un allenamento con questo esercizio per il grafico.' : 'Log a workout to see chart.'}</p>`;
-      const maxVal = Math.max(...points.map(p => p.oneRM), 10), w = 320, h = 140, pad = 20;
-      const coords = points.map((p, i) => `${points.length === 1 ? w / 2 : pad + (i / (points.length - 1)) * (w - pad * 2)},${h - pad - ((p.oneRM / maxVal) * (h - pad * 2))}`).join(' ');
+    function renderSVGChart(points, unit = 'kg') {
+      if (!points.length) return `<p class="muted small" style="padding:16px 0">${state.lang === 'it' ? 'Registra almeno un dato per visualizzare il grafico.' : 'Log at least one entry to see chart.'}</p>`;
+      const vals = points.map(p => p.value);
+      const minVal = Math.min(...vals);
+      const maxVal = Math.max(...vals);
+      const range = Math.max(1, maxVal - minVal);
+      const w = 320, h = 150, pad = 24;
+
+      const coords = points.map((p, i) => {
+        const x = points.length === 1 ? w / 2 : pad + (i / (points.length - 1)) * (w - pad * 2);
+        const norm = (maxVal === minVal) ? 0.5 : ((p.value - minVal) / range);
+        const y = h - pad - (norm * (h - pad * 2));
+        return `${x},${y}`;
+      }).join(' ');
+
       return `
         <svg viewBox="0 0 ${w} ${h}" class="chart-svg">
           <polyline fill="none" stroke="#FF5500" stroke-width="3" points="${coords}" />
           ${points.map((p, i) => {
             const x = points.length === 1 ? w / 2 : pad + (i / (points.length - 1)) * (w - pad * 2);
-            const y = h - pad - ((p.oneRM / maxVal) * (h - pad * 2));
-            return `<circle cx="${x}" cy="${y}" r="4" fill="#fff" stroke="#FF5500" stroke-width="2" /><text x="${x}" y="${y - 8}" fill="#fff" font-size="10" text-anchor="middle">${p.oneRM}kg</text>`;
+            const norm = (maxVal === minVal) ? 0.5 : ((p.value - minVal) / range);
+            const y = h - pad - (norm * (h - pad * 2));
+            return `<circle cx="${x}" cy="${y}" r="4" fill="#fff" stroke="#FF5500" stroke-width="2" />
+                    <text x="${x}" y="${y - 8}" fill="#fff" font-size="9.5" font-weight="700" text-anchor="middle">${p.value}${unit}</text>
+                    <text x="${x}" y="${h - 6}" fill="#8E8E9E" font-size="8" text-anchor="middle">${p.date}</text>`;
           }).join('')}
         </svg>
       `;
@@ -2028,7 +2401,7 @@
 
     function exportBackup() {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([JSON.stringify({ bodyweight: state.bodyweight, customExercises: state.customExercises, routines: state.routines, history: state.history }, null, 2)], { type: 'application/json' }));
+      a.href = URL.createObjectURL(new Blob([JSON.stringify({ bodyweight: state.bodyweight, bodyLogs: state.bodyLogs, customExercises: state.customExercises, routines: state.routines, history: state.history }, null, 2)], { type: 'application/json' }));
       a.download = `apex-iron-backup-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
@@ -2041,6 +2414,7 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed.bodyweight) state.bodyweight = parsed.bodyweight;
+          if (parsed.bodyLogs) state.bodyLogs = parsed.bodyLogs;
           if (parsed.customExercises) { state.customExercises = parsed.customExercises; rebuildExerciseCache(); }
           if (parsed.routines) state.routines = parsed.routines;
           if (parsed.history) state.history = parsed.history;
@@ -2223,6 +2597,7 @@ Struttura il report in 3 punti brevi: 1) Valutazione Aderenza & Volume, 2) Squil
       recalculateEntireHistoryStats();
       updateStaticLabels();
       renderCurrentView();
+      if (state.activeWorkout) requestWakeLock();
       startRealtimeSyncListener();
     });
   </script>
