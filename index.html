@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#09090B">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>APEX IRON v4.3 — Pro Strength & Calisthenics</title>
-  <link id="pwa-manifest" rel="manifest">
+  <title>APEX IRON v4.4 — Pro Strength & Calisthenics</title>
+  <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -29,13 +30,12 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 78px; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 78px; overscroll-behavior-y: contain; }
 
-    /* TOP BAR MINIMAL */
+    /* TOP BAR MINIMAL (NO BACKDROP-FILTER PESANTE SU GPU) */
     .top-bar {
       position: sticky; top: 0; z-index: 50;
-      background: rgba(9, 9, 11, 0.9); backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border); padding: 12px 16px;
+      background: #09090B; border-bottom: 1px solid var(--border); padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between;
     }
     .brand { font-weight: 800; font-size: 1.12rem; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px; }
@@ -47,9 +47,8 @@
       background: linear-gradient(180deg, #191412 0%, #121216 100%);
       border: 1px solid rgba(255, 85, 0, 0.4); border-radius: 16px;
       padding: 12px 14px; margin-bottom: 14px; position: relative; overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
     }
-    .timer-progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--orange); transition: width 0.3s linear; }
+    .timer-progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--orange); will-change: width; }
     .timer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     #timer-display { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.55rem; color: var(--orange); cursor: pointer; letter-spacing: -0.5px; }
     .timer-ctrl-group { display: flex; align-items: center; gap: 6px; }
@@ -60,7 +59,7 @@
 
     /* CONTAINER & CARDS */
     #main-content { width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px; flex: 1; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; contain: content; }
     .hero-card { background: linear-gradient(145deg, #191615 0%, #111115 100%); border-color: rgba(255,85,0,0.3); }
     .card-title { font-weight: 700; font-size: 1.02rem; }
     .section-title { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.9px; color: var(--muted); margin: 16px 0 10px; font-weight: 700; }
@@ -81,8 +80,8 @@
     .rank-Élite, .rank-Elite { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid rgba(168,85,247,0.4); }
 
     /* BUTTONS & INPUTS */
-    .btn-primary { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 0.88rem; transition: opacity 0.15s; }
-    .btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+    .btn-primary { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 0.88rem; }
+    .btn-primary:active { opacity: 0.85; }
     .btn-outline { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 0.84rem; }
     .btn-danger { background: rgba(239, 68, 68, 0.16); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; padding: 9px 14px; font-weight: 700; cursor: pointer; font-size: 0.84rem; }
     .btn-danger-ghost { background: transparent; color: var(--red); border: none; font-weight: 600; cursor: pointer; padding: 6px 10px; font-size: 0.84rem; }
@@ -117,7 +116,7 @@
     .notes-input { width: 100%; background: transparent; border: none; border-bottom: 1px dashed var(--border); color: var(--muted); font-size: 0.82rem; padding: 6px 0; margin: 6px 0 10px; outline: none; }
     .sets-head, .set-row { display: grid; grid-template-columns: 24px 50px 1fr 1fr 42px 42px 34px; gap: 5px; align-items: center; text-align: center; }
     .sets-head { font-size: 0.7rem; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
-    .set-row { padding: 4px 0; border-radius: 8px; transition: background 0.2s; }
+    .set-row { padding: 4px 0; border-radius: 8px; }
     .set-done { background: rgba(34, 197, 94, 0.13); }
     .set-pr-row { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.5); }
     .set-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
@@ -143,11 +142,10 @@
     .alt-box { background: var(--surface-2); padding: 8px 10px; border-radius: 8px; margin-top: 8px; border-left: 3px solid var(--orange); }
 
     /* HISTORY CARDS & SINGLE WORKOUT ANALYTICS */
-    .history-card { border-left: 3px solid var(--orange); }
+    .history-card { border-left: 3px solid var(--orange); cursor: pointer; }
     .history-time-pill { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted); background: var(--surface-2); padding: 3px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; }
     .history-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: var(--surface-2); padding: 9px 8px; border-radius: 10px; margin: 10px 0; text-align: center; }
-    .history-details-drawer { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; display: none; }
-    .history-card.expanded .history-details-drawer { display: block; }
+    .history-details-drawer { border-top: 1px dashed var(--border); margin-top: 12px; padding-top: 12px; }
     .workout-mini-analytics { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
     .routine-ex-preview { list-style: none; margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: grid; gap: 4px; }
     .builder-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--surface-2); border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
@@ -165,29 +163,33 @@
     .progress-fill { height: 100%; border-radius: 99px; }
 
     /* CUSTOM MODAL / BOTTOM SHEET */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.78); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 100; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
-    .modal-sheet { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 680px; max-height: 88vh; overflow-y: auto; padding: 20px; animation: slideUp 0.2s ease-out; }
-    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-sheet { background: var(--surface); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 680px; max-height: 88vh; overflow-y: auto; padding: 20px; }
 
     /* AI COACH & REPORTS */
     .chat-box { min-height: 220px; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
     .chat-msg { padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.5; max-width: 90%; }
     .msg-user { background: var(--orange); color: #fff; align-self: flex-end; }
     .msg-ai { background: var(--surface-2); border: 1px solid var(--border); align-self: flex-start; }
-    .report-box { background: linear-gradient(145deg, #17171D 0%, #121216 100%); border: 1px solid rgba(255,85,0,0.35); border-radius: 14px; padding: 14px; font-size: 0.88rem; line-height: 1.55; margin-top: 10px; }
+    .report-box { background: #15151B; border: 1px solid rgba(255,85,0,0.35); border-radius: 14px; padding: 14px; font-size: 0.88rem; line-height: 1.55; margin-top: 10px; }
 
     /* NAVIGATION BAR */
     .nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-      background: rgba(18, 18, 22, 0.96); backdrop-filter: blur(14px);
-      border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 4px;
+      background: #121216; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 4px;
     }
     .nav-btn { background: transparent; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 600; cursor: pointer; padding: 4px 8px; }
     .nav-btn.active { color: var(--orange); }
     .nav-icon { font-size: 1.18rem; }
 
-    /* TABLET & DESKTOP (XIAOMI PAD 7 PRO 11.2") */
+    /* INSTALL BANNER */
+    .install-banner {
+      background: linear-gradient(90deg, #1E1612 0%, #16161C 100%);
+      border: 1px solid rgba(255,85,0,0.45); border-radius: 14px; padding: 11px 14px;
+      margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+
     @media (min-width: 768px) {
       body { padding-bottom: 0; padding-left: 215px; }
       .nav-bar {
@@ -197,7 +199,6 @@
       .nav-btn { flex-direction: row; font-size: 0.9rem; padding: 12px 14px; border-radius: 12px; width: 100%; gap: 12px; }
       .nav-btn.active { background: var(--orange-glow); }
       .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-      .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
       .muscle-bars-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
       .modal-backdrop { align-items: center; }
       .modal-sheet { border-radius: 20px; }
@@ -208,8 +209,9 @@
 
   <!-- TOP BAR PULITA -->
   <header class="top-bar">
-    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.3</span></div>
+    <div class="brand">APEX<span>IRON</span> <span class="ver-pill">v4.4</span></div>
     <div class="row-gap">
+      <button class="btn-primary btn-sm" id="top-install-btn" style="display:none" onclick="triggerInstallPrompt()">📲 Installa App</button>
       <button class="btn-icon small" id="sync-status-btn" onclick="state.analyticsSubTab='calendar';switchTab('analytics')" title="Cloud Sync">☁️</button>
       <button class="btn-icon small" id="lang-toggle" onclick="toggleLanguage()">IT</button>
     </div>
@@ -243,24 +245,44 @@
   </nav>
 
   <script>
-    // ================= MANIFEST PWA DINAMICO =================
-    (function setupManifest() {
-      const manifest = {
-        name: "APEX IRON v4.3 — Pro Gym & Calisthenics Tracker",
-        short_name: "APEX IRON",
-        start_url: location.href,
-        display: "standalone",
-        background_color: "#09090B",
-        theme_color: "#09090B",
-        icons: [{
-          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2309090B'/%3E%3Cpath d='M110 216h40v80h-40zm252 0h40v80h-40zM166 176h36v160h-36zm144 0h36v160h-36zM202 240h108v32H202z' fill='%23FF5500'/%3E%3C/svg%3E",
-          sizes: "512x512",
-          type: "image/svg+xml"
-        }]
-      };
-      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-      document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
-    })();
+    // ================= REGISTRAZIONE SERVICE WORKER & PROMPT INSTALLAZIONE NATIVO =================
+    let deferredInstallPrompt = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const topBtn = document.getElementById('top-install-btn');
+      if (topBtn) topBtn.style.display = 'inline-flex';
+      if (state.currentTab === 'workout' && !state.activeWorkout) renderWorkoutTab();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      const topBtn = document.getElementById('top-install-btn');
+      if (topBtn) topBtn.style.display = 'none';
+      if (state.currentTab === 'workout' && !state.activeWorkout) renderWorkoutTab();
+    });
+
+    async function triggerInstallPrompt() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredInstallPrompt = null;
+        const topBtn = document.getElementById('top-install-btn');
+        if (topBtn) topBtn.style.display = 'none';
+      }
+    }
+
+    function isAppStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
 
     // ================= DIAGRAMMI VETTORIALI ESPLICATIVI ESERCIZI =================
     function getExerciseDiagramSVG(ex) {
@@ -456,6 +478,25 @@
       { id: "preset_pull", name: "PULL (Preset)", exercises: ["pullups_pronated", "barbell_row", "seated_cable_row", "face_pull", "incline_db_curl", "hammer_curl"] }
     ];
 
+    // ================= CACHE IN MEMORIA PER EVITARE RICALCOLI CONTINUI (RAM & CPU SAVER) =================
+    let exerciseLookupMap = null;
+    let cached1RMMap = null;
+
+    function rebuildExerciseCache() {
+      exerciseLookupMap = new Map();
+      BUILTIN_EXERCISES.forEach(e => exerciseLookupMap.set(e.id, e));
+      state.customExercises.forEach(e => exerciseLookupMap.set(e.id, e));
+    }
+
+    function getAllExercises() {
+      return [...BUILTIN_EXERCISES, ...state.customExercises];
+    }
+
+    function getExercise(id) {
+      if (!exerciseLookupMap) rebuildExerciseCache();
+      return exerciseLookupMap.get(id) || { id, category: 'bodybuilding', primary: 'chest', secondary: [], name: { it: id, en: id }, exec: { it: '', en: '' }, alt: { it: '', en: '' } };
+    }
+
     let state = {
       lang: localStorage.getItem('apex_lang') || 'it',
       bodyweight: parseFloat(localStorage.getItem('apex_bw')) || 75.0,
@@ -467,30 +508,23 @@
       fbUrl: localStorage.getItem('apex_fb_url') || '',
       fbPin: localStorage.getItem('apex_fb_pin') || '',
       lastUpdated: parseInt(localStorage.getItem('apex_last_updated')) || 0,
-      timer: { defaultSeconds: 180, remaining: 180, running: false, interval: null },
+      timer: { defaultSeconds: 180, remaining: 180, endTime: 0, running: false, interval: null },
       currentTab: 'workout',
       analyticsSubTab: 'muscles',
       selectedChartEx: 'bench_press_barbell',
       calendarMonthOffset: 0,
+      expandedHistoryIds: new Set(),
       chatMessages: [],
       latestReport: localStorage.getItem('apex_latest_report') || '',
       editingHistoryIndex: null,
       editingWorkoutDraft: null
     };
 
-    function getAllExercises() {
-      return [...BUILTIN_EXERCISES, ...state.customExercises];
-    }
-
-    function getExercise(id) {
-      return getAllExercises().find(e => e.id === id) || { id, category: 'bodybuilding', primary: 'chest', secondary: [], name: { it: id, en: id }, exec: { it: '', en: '' }, alt: { it: '', en: '' } };
-    }
-
     // ================= RICALCOLO AUTOMATICO STATISTICHE & PR SU TUTTO LO STORICO =================
     function recalculateEntireHistoryStats() {
-      // Ordina cronologicamente lo storico per ricalcolare in modo esatto i PR progressivi
       state.history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       const runningBest1RM = {};
+      const runningBestWeight = {};
 
       state.history.forEach(w => {
         let totalVolume = 0, prCount = 0;
@@ -501,6 +535,7 @@
         (w.exercises || []).forEach(ex => {
           const prevBest = runningBest1RM[ex.exerciseId] || 0;
           let sessionBest = prevBest;
+          let maxW = runningBestWeight[ex.exerciseId] || 0;
 
           (ex.sets || []).forEach(s => {
             s.isPR = false;
@@ -508,6 +543,7 @@
               const kg = parseFloat(s.weight) || 0;
               const reps = parseInt(s.reps) || 0;
               totalVolume += kg * reps;
+              if (kg > maxW) maxW = kg;
               if (kg > 0 && reps > 0 && s.type !== 'W') {
                 const est1RM = kg * (1 + reps / 30);
                 if (est1RM > sessionBest) {
@@ -519,15 +555,26 @@
             }
           });
           runningBest1RM[ex.exerciseId] = sessionBest;
+          runningBestWeight[ex.exerciseId] = maxW;
         });
 
         w.totalVolume = Math.round(totalVolume * 10) / 10;
         w.prCount = prCount;
       });
+
+      cached1RMMap = {};
+      Object.keys(runningBest1RM).forEach(id => {
+        cached1RMMap[id] = {
+          best1RM: Math.round((runningBest1RM[id] || 0) * 10) / 10,
+          bestWeight: runningBestWeight[id] || 0
+        };
+      });
     }
 
-    // ================= CLOUD SYNC FIREBASE =================
+    // ================= CLOUD SYNC & DEBOUNCED PERSISTENCE (BATTERY SAVER) =================
     let syncEventSource = null;
+    let saveDebounceTimer = null;
+    let cloudDebounceTimer = null;
 
     function updateSyncIcon(status) {
       const btn = document.getElementById('sync-status-btn');
@@ -579,7 +626,7 @@
         const remote = await res.json();
         if (remote && (forceOverwrite || (remote.lastUpdated && remote.lastUpdated > state.lastUpdated))) {
           if (remote.bodyweight) state.bodyweight = remote.bodyweight;
-          if (remote.customExercises) state.customExercises = mergeById(state.customExercises, remote.customExercises);
+          if (remote.customExercises) { state.customExercises = mergeById(state.customExercises, remote.customExercises); rebuildExerciseCache(); }
           if (remote.routines) state.routines = forceOverwrite ? remote.routines : mergeById(state.routines, remote.routines);
           if ('history' in remote) state.history = remote.history || [];
           if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
@@ -597,7 +644,7 @@
     function startRealtimeSyncListener() {
       if (syncEventSource) { syncEventSource.close(); syncEventSource = null; }
       const endpoint = getCleanFirebaseEndpoint();
-      if (!endpoint) { updateSyncIcon('idle'); return; }
+      if (!endpoint || document.hidden) { updateSyncIcon(endpoint ? 'synced' : 'idle'); return; }
       pullFromCloud();
       try {
         syncEventSource = new EventSource(endpoint);
@@ -605,7 +652,7 @@
           const remote = JSON.parse(e.data).data;
           if (remote && remote.lastUpdated && remote.lastUpdated > state.lastUpdated) {
             if (remote.bodyweight) state.bodyweight = remote.bodyweight;
-            if (remote.customExercises) state.customExercises = mergeById(state.customExercises, remote.customExercises);
+            if (remote.customExercises) { state.customExercises = mergeById(state.customExercises, remote.customExercises); rebuildExerciseCache(); }
             if (remote.routines) state.routines = mergeById(state.routines, remote.routines);
             if ('history' in remote) state.history = remote.history || [];
             if ('activeWorkout' in remote) state.activeWorkout = remote.activeWorkout;
@@ -633,10 +680,17 @@
       localStorage.setItem('apex_latest_report', state.latestReport);
     }
 
-    function saveState() {
+    function saveState(immediate = false) {
       state.lastUpdated = Date.now();
-      persistLocalOnly();
-      pushToCloud();
+      clearTimeout(saveDebounceTimer);
+      clearTimeout(cloudDebounceTimer);
+      if (immediate) {
+        persistLocalOnly();
+        pushToCloud();
+      } else {
+        saveDebounceTimer = setTimeout(persistLocalOnly, 350);
+        cloudDebounceTimer = setTimeout(pushToCloud, 1800);
+      }
     }
 
     function t(key) { return I18N[state.lang][key] || key; }
@@ -648,6 +702,7 @@
     }
     function closeModal() {
       document.getElementById('custom-modal').classList.remove('open');
+      document.getElementById('modal-body').innerHTML = ''; // Libera RAM DOM alla chiusura
     }
 
     // ================= PLATE CALCULATOR (BILANCIERE 20 KG) =================
@@ -692,21 +747,41 @@
       `);
     }
 
-    // ================= TIMER DI RECUPERO =================
+    // ================= TIMER DI RECUPERO ZERO-WAKE (TIMESTAMP-BASED + AUDIO SINGLETON) =================
+    let sharedAudioCtx = null;
+
     function playBeep() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator(), gain = ctx.createGain();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + 0.35);
+        if (!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+        const osc = sharedAudioCtx.createOscillator(), gain = sharedAudioCtx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(880, sharedAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, sharedAudioCtx.currentTime);
+        osc.connect(gain); gain.connect(sharedAudioCtx.destination);
+        osc.start(); osc.stop(sharedAudioCtx.currentTime + 0.35);
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } catch (e) {}
     }
 
     function formatTime(sec) {
-      return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+      const s = Math.max(0, Math.ceil(sec));
+      return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function syncTimerFromClock() {
+      if (!state.timer.running) return;
+      const diff = Math.ceil((state.timer.endTime - Date.now()) / 1000);
+      if (diff <= 0) {
+        state.timer.remaining = 0;
+        state.timer.running = false;
+        clearInterval(state.timer.interval);
+        state.timer.interval = null;
+        updateTimerUI();
+        playBeep();
+      } else {
+        state.timer.remaining = diff;
+        updateTimerUI();
+      }
     }
 
     function updateTimerUI() {
@@ -722,24 +797,50 @@
     function startTimer(customSec = null) {
       if (customSec !== null) { state.timer.defaultSeconds = customSec; state.timer.remaining = customSec; }
       clearInterval(state.timer.interval);
+      state.timer.endTime = Date.now() + state.timer.remaining * 1000;
       state.timer.running = true;
       updateTimerUI();
-      state.timer.interval = setInterval(() => {
-        if (state.timer.remaining > 0) { state.timer.remaining--; updateTimerUI(); }
-        else { clearInterval(state.timer.interval); state.timer.running = false; updateTimerUI(); playBeep(); }
-      }, 1000);
+      if (!document.hidden) {
+        state.timer.interval = setInterval(syncTimerFromClock, 1000);
+      }
     }
 
     function toggleTimer() {
-      if (state.timer.running) { clearInterval(state.timer.interval); state.timer.running = false; updateTimerUI(); }
-      else { if (state.timer.remaining === 0) state.timer.remaining = state.timer.defaultSeconds; startTimer(); }
+      if (state.timer.running) {
+        syncTimerFromClock();
+        clearInterval(state.timer.interval);
+        state.timer.interval = null;
+        state.timer.running = false;
+        updateTimerUI();
+      } else {
+        if (state.timer.remaining <= 0) state.timer.remaining = state.timer.defaultSeconds;
+        startTimer();
+      }
     }
 
     function adjustTimer(delta) {
+      if (state.timer.running) syncTimerFromClock();
       state.timer.remaining = Math.max(0, state.timer.remaining + delta);
       if (state.timer.remaining > state.timer.defaultSeconds) state.timer.defaultSeconds = state.timer.remaining;
+      if (state.timer.running) state.timer.endTime = Date.now() + state.timer.remaining * 1000;
       updateTimerUI();
     }
+
+    // Sospende polling CPU e SSE quando l'app è in background per risparmiare batteria
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (state.timer.interval) { clearInterval(state.timer.interval); state.timer.interval = null; }
+        if (syncEventSource) { syncEventSource.close(); syncEventSource = null; }
+      } else {
+        if (state.timer.running) {
+          syncTimerFromClock();
+          if (state.timer.running && !state.timer.interval) {
+            state.timer.interval = setInterval(syncTimerFromClock, 1000);
+          }
+        }
+        startRealtimeSyncListener();
+      }
+    });
 
     function openTimerInputModal() {
       openModal(`
@@ -751,7 +852,12 @@
         <div class="row-gap">
           <button class="btn-primary full-width" onclick="
             const val = parseInt(document.getElementById('modal-timer-sec').value);
-            if (!isNaN(val) && val >= 5) { state.timer.defaultSeconds = val; state.timer.remaining = val; updateTimerUI(); }
+            if (!isNaN(val) && val >= 5) {
+              state.timer.defaultSeconds = val;
+              state.timer.remaining = val;
+              if (state.timer.running) state.timer.endTime = Date.now() + val * 1000;
+              updateTimerUI();
+            }
             closeModal();
           ">OK</button>
           <button class="btn-outline" onclick="closeModal()">${t('cancel_workout')}</button>
@@ -761,22 +867,8 @@
 
     // ================= RANKING DI FORZA & RECORD PERSONALI (PR) =================
     function getBest1RMForExercise(exerciseId) {
-      let best1RM = 0, bestWeight = 0;
-      state.history.forEach(w => {
-        const ex = w.exercises.find(e => e.exerciseId === exerciseId);
-        if (ex) {
-          ex.sets.forEach(s => {
-            if (s.done && s.type !== 'W') {
-              const kg = parseFloat(s.weight) || 0;
-              const reps = parseInt(s.reps) || 0;
-              const est = kg * (1 + reps / 30);
-              if (est > best1RM) best1RM = est;
-              if (kg > bestWeight) bestWeight = kg;
-            }
-          });
-        }
-      });
-      return { best1RM: Math.round(best1RM * 10) / 10, bestWeight };
+      if (!cached1RMMap) recalculateEntireHistoryStats();
+      return cached1RMMap[exerciseId] || { best1RM: 0, bestWeight: 0 };
     }
 
     function calculateStrengthRank(exerciseId, oneRM) {
@@ -809,8 +901,7 @@
           exerciseId: exId, notes: '', sets: [{ type: 'N', weight: '', reps: '', rir: '2', rpe: '8', done: false, isPR: false }]
         })) : []
       };
-      saveState();
-      try { if ('wakeLock' in navigator) navigator.wakeLock.request('screen'); } catch (e) {}
+      saveState(true);
       switchTab('workout');
     }
 
@@ -828,7 +919,7 @@
           sets: ex.sets.map(s => ({ ...s, done: false, isPR: false }))
         }))
       };
-      saveState();
+      saveState(true);
       switchTab('workout');
     }
 
@@ -906,9 +997,9 @@
         durationMin
       });
       state.activeWorkout = null;
-      clearInterval(state.timer.interval); state.timer.running = false;
+      clearInterval(state.timer.interval); state.timer.interval = null; state.timer.running = false;
       recalculateEntireHistoryStats();
-      saveState();
+      saveState(true);
       state.analyticsSubTab = 'history';
       switchTab('analytics');
     }
@@ -1031,7 +1122,17 @@
       const container = document.getElementById('main-content');
       if (!state.activeWorkout) {
         const suggestion = getSuggestedNextWorkout();
+        const showInstallCard = !isAppStandalone() && deferredInstallPrompt;
         container.innerHTML = `
+          ${showInstallCard ? `
+            <div class="install-banner">
+              <div>
+                <div class="small"><strong>📲 Installa APEX IRON sul dispositivo</strong></div>
+                <div class="small muted">Icona nativa, zero barra browser e funzionamento 100% offline.</div>
+              </div>
+              <button class="btn-primary btn-sm" onclick="triggerInstallPrompt()">Installa</button>
+            </div>
+          ` : ''}
           <div class="card hero-card">
             <div class="badge-orange">${t('no_active_workout')}</div>
             <h2 style="margin-top:8px">${state.lang === 'it' ? 'Pronto ad allenarti?' : 'Ready to train?'}</h2>
@@ -1090,7 +1191,7 @@
         <div class="workout-header-bar">
           <div><span class="badge-orange">${t('active_workout')}</span><h2 style="margin-top:4px">${state.activeWorkout.name}</h2></div>
           <div class="row-gap">
-            <button class="btn-danger-ghost" onclick="if(confirm('Annullare la sessione?')){state.activeWorkout=null;clearInterval(state.timer.interval);state.timer.running=false;saveState();renderWorkoutTab();}">${t('cancel_workout')}</button>
+            <button class="btn-danger-ghost" onclick="if(confirm('Annullare la sessione?')){state.activeWorkout=null;clearInterval(state.timer.interval);state.timer.interval=null;state.timer.running=false;saveState(true);renderWorkoutTab();}">${t('cancel_workout')}</button>
             <button class="btn-primary" onclick="finishWorkout()">${t('finish_workout')}</button>
           </div>
         </div>
@@ -1237,13 +1338,13 @@
       } else {
         state.routines.push({ id: 'r_' + Date.now(), name, exercises: tempRoutineExercises });
       }
-      saveState(); renderRoutinesTab();
+      saveState(true); renderRoutinesTab();
     }
 
     function deleteRoutine(id) {
       if (!confirm(state.lang === 'it' ? 'Eliminare questa scheda?' : 'Delete this routine?')) return;
       state.routines = state.routines.filter(r => r.id !== id);
-      saveState(); renderRoutinesTab();
+      saveState(true); renderRoutinesTab();
     }
 
     // --- TAB 3: ENCICLOPEDIA + CREATORE ESERCIZI CUSTOM ---
@@ -1301,7 +1402,8 @@
               exec: { it: document.getElementById('cust-ex-exec').value.trim() || 'Esercizio personalizzato.', en: 'Custom exercise.' },
               alt: { it: 'Variante libera equivalente.', en: 'Equivalent free-weight variant.' }
             });
-            saveState(); closeModal(); renderExercisesTab();
+            rebuildExerciseCache();
+            saveState(true); closeModal(); renderExercisesTab();
           ">${t('save_routine')}</button>
         </div>
       `);
@@ -1345,7 +1447,7 @@
       `);
     }
 
-    // --- TAB 4: ANALISI (MUSCOLI, STORICO MODIFICABILE CON GRAFICI SINGOLA SEDUTA, CALENDARIO) ---
+    // --- TAB 4: ANALISI (MUSCOLI, STORICO LAZY-RENDERED, CALENDARIO) ---
     function renderAnalyticsTab() {
       const container = document.getElementById('main-content');
       container.innerHTML = `
@@ -1527,7 +1629,7 @@
       }, 180);
     }
 
-    // ================= STORICO CRONOLOGICO CON GRAFICI PER SINGOLA SEDUTA, ELIMINAZIONE & MODIFICA =================
+    // ================= STORICO CRONOLOGICO CON LAZY RENDERING (RAM OPTIMIZED) =================
     function formatClockTime(timestampMs) {
       if (!timestampMs) return '--:--';
       return new Date(timestampMs).toLocaleTimeString(state.lang === 'it' ? 'it-IT' : 'en-US', { hour: '2-digit', minute: '2-digit' });
@@ -1541,6 +1643,35 @@
     function toLocalInputTime(timestampMs) {
       const d = new Date(timestampMs || Date.now());
       return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function toggleHistoryExpand(workoutId, origIdx) {
+      const drawer = document.getElementById(`drawer_${workoutId}`);
+      if (!drawer) return;
+      if (state.expandedHistoryIds.has(workoutId)) {
+        state.expandedHistoryIds.delete(workoutId);
+        drawer.innerHTML = '';
+        drawer.style.display = 'none';
+      } else {
+        state.expandedHistoryIds.add(workoutId);
+        drawer.innerHTML = renderHistoryDrawerContentHTML(state.history[origIdx]);
+        drawer.style.display = 'block';
+      }
+    }
+
+    function renderHistoryDrawerContentHTML(w) {
+      if (!w) return '';
+      return `
+        ${renderSingleWorkoutAnalyticsHTML(w)}
+        <div class="small" style="font-weight:700;margin-bottom:6px">📋 Log Completo Serie</div>
+        ${w.exercises.map(e => `
+          <div style="margin-bottom:8px;background:var(--surface-2);padding:8px 10px;border-radius:8px">
+            <div class="small"><strong>${getExercise(e.exerciseId).name[state.lang]}</strong></div>
+            ${e.notes ? `<div class="small muted" style="font-style:italic">"${e.notes}"</div>` : ''}
+            <div class="mono small muted" style="margin-top:4px">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}[${s.type}]: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'}, RPE ${s.rpe||'-'}) ${s.isPR?'🏆':''}`).join('<br>')}</div>
+          </div>
+        `).join('')}
+      `;
     }
 
     function confirmDeleteHistoryWorkout(origIdx) {
@@ -1562,7 +1693,7 @@
     function executeDeleteHistoryWorkout(origIdx) {
       state.history.splice(origIdx, 1);
       recalculateEntireHistoryStats();
-      saveState();
+      saveState(true);
       closeModal();
       renderAnalyticsTab();
     }
@@ -1691,7 +1822,7 @@
 
       state.history[idx] = draft;
       recalculateEntireHistoryStats();
-      saveState();
+      saveState(true);
       closeModal();
       renderAnalyticsTab();
     }
@@ -1700,7 +1831,6 @@
       const mList = calculateSingleWorkoutMuscles(w);
       const totalMuscleSets = mList.reduce((acc, m) => acc + m.sets, 0);
 
-      // Calcolo volume per esercizio per barre comparative
       const exVols = (w.exercises || []).map(ex => {
         let vol = 0, setsDone = 0;
         (ex.sets || []).forEach(s => {
@@ -1763,6 +1893,8 @@
       box.innerHTML = `
         <h3 class="section-title">${t('history_title')} (${state.history.length}) — Tocca una scheda per grafici e dettagli</h3>
         ${reversed.map(w => {
+          const wId = w.id || ('h_' + w.origIdx);
+          const isExp = state.expandedHistoryIds.has(wId);
           const dateStr = new Date(w.date).toLocaleDateString(state.lang === 'it' ? 'it-IT' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
           const startStr = formatClockTime(w.startTime || (new Date(w.date).getTime() - ((w.durationMin || 45) * 60000)));
           const endStr = formatClockTime(w.endTime || new Date(w.date).getTime());
@@ -1770,7 +1902,7 @@
           const exCount = w.exercises.filter(e => e.sets.some(s => s.done)).length;
 
           return `
-            <div class="card history-card" onclick="this.classList.toggle('expanded')">
+            <div class="card history-card" onclick="toggleHistoryExpand('${wId}', ${w.origIdx})">
               <div class="ex-log-header">
                 <div>
                   <div class="row-gap" style="flex-wrap:wrap">
@@ -1803,17 +1935,8 @@
                 }).join('')}
               </div>
 
-              <!-- DETTAGLIO ESPANDIBILE CON GRAFICI MUSCOLARI DELLA SEDUTA & LOG COMPLETO -->
-              <div class="history-details-drawer" onclick="event.stopPropagation()">
-                ${renderSingleWorkoutAnalyticsHTML(w)}
-                <div class="small" style="font-weight:700;margin-bottom:6px">📋 Log Completo Serie</div>
-                ${w.exercises.map(e => `
-                  <div style="margin-bottom:8px;background:var(--surface-2);padding:8px 10px;border-radius:8px">
-                    <div class="small"><strong>${getExercise(e.exerciseId).name[state.lang]}</strong></div>
-                    ${e.notes ? `<div class="small muted" style="font-style:italic">"${e.notes}"</div>` : ''}
-                    <div class="mono small muted" style="margin-top:4px">${e.sets.filter(s=>s.done).map((s,i)=>`S${i+1}[${s.type}]: ${s.weight||0}kg×${s.reps||0} (RIR ${s.rir||'-'}, RPE ${s.rpe||'-'}) ${s.isPR?'🏆':''}`).join('<br>')}</div>
-                  </div>
-                `).join('')}
+              <div id="drawer_${wId}" class="history-details-drawer" style="display:${isExp ? 'block' : 'none'}" onclick="event.stopPropagation()">
+                ${isExp ? renderHistoryDrawerContentHTML(w) : ''}
               </div>
             </div>
           `;
@@ -1918,11 +2041,11 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed.bodyweight) state.bodyweight = parsed.bodyweight;
-          if (parsed.customExercises) state.customExercises = parsed.customExercises;
+          if (parsed.customExercises) { state.customExercises = parsed.customExercises; rebuildExerciseCache(); }
           if (parsed.routines) state.routines = parsed.routines;
           if (parsed.history) state.history = parsed.history;
           recalculateEntireHistoryStats();
-          saveState(); renderAnalyticsTab();
+          saveState(true); renderAnalyticsTab();
         } catch (err) {}
       };
       reader.readAsText(file);
@@ -1991,7 +2114,7 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido senza markdown, in questo for
             const validIds = parsed.exercises.filter(id => getAllExercises().some(e => e.id === id));
             if (validIds.length > 0) {
               state.routines.push({ id: 'r_ai_' + Date.now(), name: `✨ ${parsed.name}`, exercises: validIds });
-              saveState();
+              saveState(true);
               state.chatMessages.push({
                 role: 'ai',
                 text: `✅ Ho creato e salvato la scheda **${parsed.name}** nella tab *Schede* con:\n• ${validIds.map(id => getExercise(id).name[state.lang]).join('\n• ')}`
@@ -2096,6 +2219,7 @@ Struttura il report in 3 punti brevi: 1) Valutazione Aderenza & Volume, 2) Squil
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      rebuildExerciseCache();
       recalculateEntireHistoryStats();
       updateStaticLabels();
       renderCurrentView();
