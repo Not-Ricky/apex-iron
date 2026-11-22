@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apex-iron-v4.5-cache';
+const CACHE_NAME = 'apex-iron-auto-cache';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -23,24 +23,36 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
-  // Non intercettare chiamate API esterne (Firebase e Gemini)
   if (url.includes('firebasedatabase.app') || url.includes('googleapis.com/v1beta')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
+  // NETWORK-FIRST per le pagine HTML / navigazione: prende sempre l'ultima versione da GitHub
+  if (event.request.mode === 'navigate' || url.endsWith('index.html') || url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
 
-      return cachedResponse || fetchPromise;
+  // CACHE-FIRST per asset statici (font, icone, manifest) per velocità istantanea
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return networkResponse;
+      });
     })
   );
 });
